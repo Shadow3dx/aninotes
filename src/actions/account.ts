@@ -6,6 +6,41 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
+const updateProfileSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(30)
+    .regex(/^[a-zA-Z0-9_-]+$/, "Only letters, numbers, hyphens, and underscores"),
+});
+
+export async function updateProfile(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const data = updateProfileSchema.parse({
+    name: formData.get("name"),
+    username: formData.get("username"),
+  });
+
+  // Check if username is taken by another user
+  const existing = await prisma.user.findUnique({
+    where: { username: data.username },
+  });
+  if (existing && existing.id !== session.user.id) {
+    throw new Error("Username is already taken");
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { name: data.name, username: data.username },
+  });
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: z.string().min(8, "Password must be at least 8 characters"),
