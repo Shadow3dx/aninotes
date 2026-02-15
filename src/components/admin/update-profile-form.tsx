@@ -11,16 +11,16 @@ import { updateProfile } from "@/actions/account";
 
 interface UpdateProfileFormProps {
   currentName: string;
-  currentUsername: string;
+  currentEmail: string;
 }
 
 export function UpdateProfileForm({
   currentName,
-  currentUsername,
+  currentEmail,
 }: UpdateProfileFormProps) {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState(currentName);
-  const [username, setUsername] = useState(currentUsername);
+  const [email, setEmail] = useState(currentEmail);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,7 +29,7 @@ export function UpdateProfileForm({
     try {
       const formData = new FormData();
       formData.set("name", name);
-      formData.set("username", username);
+      formData.set("email", email);
       await updateProfile(formData);
       toast.success("Profile updated!");
     } catch (err) {
@@ -65,17 +65,17 @@ export function UpdateProfileForm({
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="email">Login Email</Label>
             <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="login-username"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
               required
-              minLength={3}
             />
             <p className="text-xs text-muted-foreground">
-              Used for login and your author URL
+              Used to sign in to the admin dashboard
             </p>
           </div>
           <Button type="submit" disabled={saving}>

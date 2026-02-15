@@ -8,11 +8,7 @@ import { z } from "zod";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(30)
-    .regex(/^[a-zA-Z0-9_-]+$/, "Only letters, numbers, hyphens, and underscores"),
+  email: z.string().email("Invalid email address"),
 });
 
 export async function updateProfile(formData: FormData) {
@@ -21,20 +17,20 @@ export async function updateProfile(formData: FormData) {
 
   const data = updateProfileSchema.parse({
     name: formData.get("name"),
-    username: formData.get("username"),
+    email: formData.get("email"),
   });
 
-  // Check if username is taken by another user
+  // Check if email is taken by another user
   const existing = await prisma.user.findUnique({
-    where: { username: data.username },
+    where: { email: data.email },
   });
   if (existing && existing.id !== session.user.id) {
-    throw new Error("Username is already taken");
+    throw new Error("Email is already taken");
   }
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: data.name, username: data.username },
+    data: { name: data.name, email: data.email },
   });
 
   revalidatePath("/admin");

@@ -10,7 +10,7 @@ export default async function AdminSettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, username: true },
+    select: { name: true, email: true },
   });
 
   if (!user) redirect("/login");
@@ -26,7 +26,7 @@ export default async function AdminSettingsPage() {
       <div className="space-y-6">
         <UpdateProfileForm
           currentName={user.name}
-          currentUsername={user.username}
+          currentEmail={user.email}
         />
         <ChangePasswordForm />
       </div>
