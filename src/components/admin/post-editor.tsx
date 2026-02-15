@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { PostContent } from "@/components/posts/post-content";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createPost, updatePost } from "@/actions/posts";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { MarkdownToolbar } from "@/components/admin/markdown-toolbar";
 import { slugify } from "@/lib/utils";
 import type { Post, Tag, Category } from "@prisma/client";
 
@@ -34,6 +35,7 @@ interface PostEditorProps {
 
 export function PostEditor({ post, allTags, allCategories }: PostEditorProps) {
   const router = useRouter();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState(post?.title ?? "");
   const [slug, setSlug] = useState(post?.slug ?? "");
@@ -333,14 +335,22 @@ export function PostEditor({ post, allTags, allCategories }: PostEditorProps) {
             <TabsTrigger value="preview">Preview</TabsTrigger>
           </TabsList>
           <TabsContent value="edit">
+            <MarkdownToolbar
+              textareaRef={textareaRef}
+              onUpdate={(v) => {
+                setContent(v);
+                markDirty();
+              }}
+            />
             <Textarea
+              ref={textareaRef}
               value={content}
               onChange={(e) => {
                 setContent(e.target.value);
                 markDirty();
               }}
               placeholder="Write your review in Markdown..."
-              className="min-h-[400px] font-mono text-sm"
+              className="min-h-[400px] rounded-t-none font-mono text-sm"
               required
             />
           </TabsContent>
