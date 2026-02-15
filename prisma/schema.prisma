@@ -43,6 +43,7 @@ model Post {
 
   tags       PostTag[]
   categories PostCategory[]
+  comments   Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,6 +51,21 @@ model Post {
   @@index([status])
   @@index([publishedAt])
   @@index([animeTitle])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  authorName String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([parentId])
 }
 
 model Tag {

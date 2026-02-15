@@ -4,17 +4,20 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight, Calendar, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { Container } from "@/components/layout/container";
 import { PostContent } from "@/components/posts/post-content";
 import { TableOfContents } from "@/components/posts/table-of-contents";
 import { AnimeMetadata } from "@/components/posts/anime-metadata";
 import { ShareButton } from "@/components/posts/share-button";
 import { RelatedPosts } from "@/components/posts/related-posts";
+import { CommentSection } from "@/components/comments/comment-section";
 import { TagPill } from "@/components/tags/tag-pill";
 import { CategoryBadge } from "@/components/tags/category-badge";
 import { Button } from "@/components/ui/button";
 import { extractHeadings } from "@/lib/markdown";
 import { formatDate, readingTime } from "@/lib/utils";
+import type { CommentData } from "@/components/comments/comment-item";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -60,6 +63,28 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   const headings = extractHeadings(post.contentMarkdown);
+  const session = await auth();
+  const isAdmin = !!session?.user;
+
+  // Get comments as a nested tree
+  const rawComments = await prisma.comment.findMany({
+    where: { postId: post.id },
+    orderBy: { createdAt: "asc" },
+  });
+
+  // Build tree structure
+  function buildTree(parentId: string | null): CommentData[] {
+    return rawComments
+      .filter((c) => c.parentId === parentId)
+      .map((c) => ({
+        id: c.id,
+        body: c.body,
+        authorName: c.authorName,
+        createdAt: c.createdAt.toISOString(),
+        replies: buildTree(c.id),
+      }));
+  }
+  const comments = buildTree(null);
 
   // Get previous and next posts
   const [prevPost, nextPost] = await Promise.all([
@@ -200,6 +225,15 @@ export default async function PostPage({ params }: PostPageProps) {
           currentPostId={post.id}
           tagIds={post.tags.map(({ tag }) => tag.id)}
         />
+
+        {/* Comments */}
+        <div className="mt-12 border-t border-border/40 pt-8">
+          <CommentSection
+            postId={post.id}
+            comments={comments}
+            isAdmin={isAdmin}
+          />
+        </div>
       </div>
     </Container>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, FilePen, Clock, Star, Plus } from "lucide-react";
+import { FileText, FilePen, Clock, Star, Plus, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 
 export default async function AdminDashboard() {
-  const [publishedCount, draftCount, scheduledCount, posts, avgRating] =
+  const [publishedCount, draftCount, scheduledCount, posts, avgRating, commentCount, recentComments] =
     await Promise.all([
       prisma.post.count({ where: { status: "PUBLISHED" } }),
       prisma.post.count({ where: { status: "DRAFT" } }),
@@ -18,6 +18,12 @@ export default async function AdminDashboard() {
         include: { author: true },
       }),
       prisma.post.aggregate({ _avg: { rating: true } }),
+      prisma.comment.count(),
+      prisma.comment.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        include: { post: { select: { title: true, slug: true } } },
+      }),
     ]);
 
   const stats = [
@@ -38,6 +44,12 @@ export default async function AdminDashboard() {
       value: scheduledCount,
       icon: Clock,
       color: "text-blue-500",
+    },
+    {
+      label: "Comments",
+      value: commentCount,
+      icon: MessageCircle,
+      color: "text-purple-500",
     },
     {
       label: "Avg Rating",
@@ -63,7 +75,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -118,6 +130,52 @@ export default async function AdminDashboard() {
               </Link>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent comments */}
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Recent Comments</CardTitle>
+          <Link href="/admin/comments">
+            <Button variant="ghost" size="sm">
+              View all
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {recentComments.length > 0 ? (
+            <div className="space-y-3">
+              {recentComments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="rounded-lg p-3 transition-colors hover:bg-accent"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">
+                      {comment.authorName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(comment.createdAt)}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                    {comment.body}
+                  </p>
+                  <Link
+                    href={`/posts/${comment.post.slug}`}
+                    className="mt-1 text-xs text-primary hover:underline"
+                  >
+                    on {comment.post.title}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No comments yet.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
