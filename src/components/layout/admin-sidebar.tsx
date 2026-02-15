@@ -8,6 +8,7 @@ import {
   FileText,
   Tags,
   FolderOpen,
+  Settings,
   ExternalLink,
   LogOut,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const sidebarLinks = [
   { href: "/admin/posts", label: "Posts", icon: FileText },
   { href: "/admin/tags", label: "Tags", icon: Tags },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export function AdminSidebar() {

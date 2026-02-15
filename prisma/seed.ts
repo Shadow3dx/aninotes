@@ -5,13 +5,15 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Create admin user
-  const passwordHash = await bcrypt.hash("AniNotes2024!", 12);
+  const adminPassword = process.env.ADMIN_PASSWORD || "AniNotes2024!";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@aninotes.com";
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@aninotes.com" },
-    update: {},
+    where: { email: adminEmail },
+    update: { passwordHash },
     create: {
       name: "AniNotes Admin",
-      email: "admin@aninotes.com",
+      email: adminEmail,
       username: "admin",
       passwordHash,
       bio: "Anime enthusiast and reviewer. Sharing my thoughts on every episode.",
