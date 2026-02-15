@@ -12,9 +12,9 @@ export async function GET(request: NextRequest) {
     where: {
       status: "PUBLISHED",
       OR: [
-        { title: { contains: q } },
-        { animeTitle: { contains: q } },
-        { excerpt: { contains: q } },
+        { title: { contains: q, mode: "insensitive" } },
+        { animeTitle: { contains: q, mode: "insensitive" } },
+        { excerpt: { contains: q, mode: "insensitive" } },
       ],
     },
     include: {

@@ -24,9 +24,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       where: {
         status: "PUBLISHED",
         OR: [
-          { title: { contains: q } },
-          { animeTitle: { contains: q } },
-          { excerpt: { contains: q } },
+          { title: { contains: q, mode: "insensitive" } },
+          { animeTitle: { contains: q, mode: "insensitive" } },
+          { excerpt: { contains: q, mode: "insensitive" } },
         ],
       },
       include: {
