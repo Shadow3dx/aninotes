@@ -9,10 +9,11 @@ import type { Components } from "react-markdown";
 
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "img"],
+  tagNames: [...(defaultSchema.tagNames || []), "img", "div"],
   attributes: {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "style"],
+    div: ["style"],
   },
 };
 

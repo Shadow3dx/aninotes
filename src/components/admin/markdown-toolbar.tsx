@@ -14,6 +14,7 @@ import {
   Image,
   Minus,
   Strikethrough,
+  AlignCenter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +63,7 @@ const actions: (InsertAction | "separator" | "image")[] = [
   { label: "Link", icon: Link2, prefix: "[", suffix: "](url)", placeholder: "link text" },
   "image",
   "separator",
+  { label: "Center", icon: AlignCenter, prefix: '<div style="text-align: center">\n', suffix: "\n</div>", block: true, placeholder: "centered content" },
   { label: "Horizontal Rule", icon: Minus, prefix: "\n---\n", block: true, placeholder: "" },
 ];
 
@@ -78,6 +80,7 @@ export function MarkdownToolbar({ textareaRef, onUpdate }: MarkdownToolbarProps)
   const [imageAlt, setImageAlt] = useState("");
   const [imageSize, setImageSize] = useState("100%");
   const [customSize, setCustomSize] = useState("");
+  const [imageCenter, setImageCenter] = useState(false);
 
   function insertMarkdown(action: InsertAction) {
     const textarea = textareaRef.current;
@@ -96,7 +99,7 @@ export function MarkdownToolbar({ textareaRef, onUpdate }: MarkdownToolbarProps)
       const needsNewline = beforeCursor.length > 0 && !beforeCursor.endsWith("\n");
       const prefix = (needsNewline ? "\n" : "") + action.prefix;
       const content = selectedText || action.placeholder || "";
-      insertion = prefix + content;
+      insertion = prefix + content + (action.suffix || "");
       cursorOffset = prefix.length;
     } else {
       const content = selectedText || action.placeholder || "";
@@ -135,13 +138,18 @@ export function MarkdownToolbar({ textareaRef, onUpdate }: MarkdownToolbarProps)
     const needsNewline = beforeCursor.length > 0 && !beforeCursor.endsWith("\n");
     const prefix = needsNewline ? "\n" : "";
 
-    let insertion: string;
+    let imgTag: string;
     if (width === "100%") {
-      // Full width — use simple markdown syntax
-      insertion = `${prefix}![${alt}](${url})`;
+      imgTag = `![${alt}](${url})`;
     } else {
-      // Sized — use HTML img tag
-      insertion = `${prefix}<img src="${url}" alt="${alt}" width="${width}" />`;
+      imgTag = `<img src="${url}" alt="${alt}" width="${width}" />`;
+    }
+
+    let insertion: string;
+    if (imageCenter) {
+      insertion = `${prefix}<div style="text-align: center">\n${imgTag}\n</div>`;
+    } else {
+      insertion = `${prefix}${imgTag}`;
     }
 
     const newText = text.slice(0, start) + insertion + text.slice(start);
@@ -152,6 +160,7 @@ export function MarkdownToolbar({ textareaRef, onUpdate }: MarkdownToolbarProps)
     setImageAlt("");
     setImageSize("100%");
     setCustomSize("");
+    setImageCenter(false);
     setImageOpen(false);
 
     requestAnimationFrame(() => {
@@ -246,6 +255,16 @@ export function MarkdownToolbar({ textareaRef, onUpdate }: MarkdownToolbarProps)
                         className="h-8 text-sm"
                       />
                     </div>
+
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={imageCenter}
+                        onChange={(e) => setImageCenter(e.target.checked)}
+                        className="accent-primary"
+                      />
+                      Center image
+                    </label>
 
                     <Button
                       type="button"
