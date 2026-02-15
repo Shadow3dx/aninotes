@@ -5,6 +5,8 @@ import { SearchBar } from "@/components/search/search-bar";
 import { PostGrid } from "@/components/posts/post-grid";
 import type { PostWithRelations } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Search",
 };
