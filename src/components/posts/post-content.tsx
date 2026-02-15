@@ -2,9 +2,19 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeSanitize from "rehype-sanitize";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import type { Components } from "react-markdown";
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), "img"],
+  attributes: {
+    ...defaultSchema.attributes,
+    img: ["src", "alt", "width", "height", "style"],
+  },
+};
 
 interface PostContentProps {
   content: string;
@@ -50,7 +60,7 @@ export function PostContent({ content }: PostContentProps) {
     <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-headings:font-bold prose-a:text-primary prose-blockquote:border-primary/50 prose-code:text-primary">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSanitize, rehypeHighlight]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeHighlight]}
         components={components}
       >
         {content}
