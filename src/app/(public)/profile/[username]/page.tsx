@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Calendar, User as UserIcon, Star, Film, BookOpen } from "lucide-react";
+import { Calendar, User as UserIcon, Film, BookOpen } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Container } from "@/components/layout/container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProfileEntryCard } from "@/components/tracking/profile-entry-card";
 import { TrackingStatsBar } from "@/components/tracking/tracking-stats-bar";
+import { ProfileEntryGrid } from "@/components/tracking/profile-entry-grid";
+import { ScoreDistributionChart } from "@/components/tracking/score-distribution-chart";
+import { ProfileFavorites } from "@/components/tracking/profile-favorites";
+import { ProfileStatsOverview } from "@/components/tracking/profile-stats-overview";
+import { ProfileActivityTimeline } from "@/components/tracking/profile-activity-timeline";
 import { formatDate } from "@/lib/utils";
 import type { TrackingStats } from "@/types";
 
@@ -56,6 +60,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     }),
   ]);
 
+  // Compute anime stats
   const scoredAnime = animeEntries.filter((e) => e.score !== null);
   const animeStats: TrackingStats = {
     total: animeEntries.length,
@@ -66,15 +71,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     planTo: animeEntries.filter((e) => e.status === "PLAN_TO_WATCH").length,
     avgScore:
       scoredAnime.length > 0
-        ? scoredAnime.reduce((sum, e) => sum + (e.score ?? 0), 0) /
-          scoredAnime.length
+        ? scoredAnime.reduce((sum, e) => sum + (e.score ?? 0), 0) / scoredAnime.length
         : null,
-    totalProgress: animeEntries.reduce(
-      (sum, e) => sum + e.episodesWatched,
-      0
-    ),
+    totalProgress: animeEntries.reduce((sum, e) => sum + e.episodesWatched, 0),
   };
 
+  // Compute manga stats
   const scoredManga = mangaEntries.filter((e) => e.score !== null);
   const mangaStats: TrackingStats = {
     total: mangaEntries.length,
@@ -85,14 +87,57 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     planTo: mangaEntries.filter((e) => e.status === "PLAN_TO_READ").length,
     avgScore:
       scoredManga.length > 0
-        ? scoredManga.reduce((sum, e) => sum + (e.score ?? 0), 0) /
-          scoredManga.length
+        ? scoredManga.reduce((sum, e) => sum + (e.score ?? 0), 0) / scoredManga.length
         : null,
-    totalProgress: mangaEntries.reduce(
-      (sum, e) => sum + e.chaptersRead,
-      0
-    ),
+    totalProgress: mangaEntries.reduce((sum, e) => sum + e.chaptersRead, 0),
   };
+
+  // Aggregate stats
+  const totalEpisodesWatched = animeEntries.reduce((sum, e) => sum + e.episodesWatched, 0);
+  const totalChaptersRead = mangaEntries.reduce((sum, e) => sum + e.chaptersRead, 0);
+  const totalVolumesRead = mangaEntries.reduce((sum, e) => sum + e.volumesRead, 0);
+  const allScored = [...scoredAnime, ...scoredManga];
+  const avgScore =
+    allScored.length > 0
+      ? allScored.reduce((sum, e) => sum + (e.score ?? 0), 0) / allScored.length
+      : null;
+
+  // Favorites
+  const animeFavorites = animeEntries.filter((e) => e.isFavorite);
+  const mangaFavorites = mangaEntries.filter((e) => e.isFavorite);
+  const favoriteItems = [
+    ...animeFavorites.map((e) => ({ entry: e, mediaKind: "anime" as const })),
+    ...mangaFavorites.map((e) => ({ entry: e, mediaKind: "manga" as const })),
+  ];
+
+  // Recent activity (merge, sort by updatedAt, take 8)
+  const recentActivity = [
+    ...animeEntries.map((e) => ({
+      id: e.id,
+      title: e.title,
+      imageUrl: e.imageUrl,
+      status: e.status,
+      score: e.score,
+      updatedAt: e.updatedAt.toISOString(),
+      mediaKind: "anime" as const,
+    })),
+    ...mangaEntries.map((e) => ({
+      id: e.id,
+      title: e.title,
+      imageUrl: e.imageUrl,
+      status: e.status,
+      score: e.score,
+      updatedAt: e.updatedAt.toISOString(),
+      mediaKind: "manga" as const,
+    })),
+  ]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 8);
+
+  // Serialize entries for client components
+  const serializedAnime = JSON.parse(JSON.stringify(animeEntries));
+  const serializedManga = JSON.parse(JSON.stringify(mangaEntries));
+  const serializedFavorites = JSON.parse(JSON.stringify(favoriteItems));
 
   return (
     <Container className="py-8">
@@ -126,6 +171,21 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </CardContent>
       </Card>
 
+      {/* Stats Overview */}
+      <ProfileStatsOverview
+        totalEntries={animeEntries.length + mangaEntries.length}
+        totalEpisodesWatched={totalEpisodesWatched}
+        totalChaptersRead={totalChaptersRead}
+        totalVolumesRead={totalVolumesRead}
+        avgScore={avgScore}
+      />
+
+      {/* Favorites */}
+      <ProfileFavorites items={serializedFavorites} />
+
+      {/* Recent Activity */}
+      <ProfileActivityTimeline entries={recentActivity} />
+
       {/* Anime/Manga Lists */}
       <Tabs defaultValue="anime">
         <TabsList className="mb-6">
@@ -139,40 +199,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
         <TabsContent value="anime" className="space-y-6">
           <TrackingStatsBar stats={animeStats} type="anime" />
-          {animeEntries.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {animeEntries.map((entry) => (
-                <ProfileEntryCard
-                  key={entry.id}
-                  entry={JSON.parse(JSON.stringify(entry))}
-                  type="anime"
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="py-12 text-center text-muted-foreground">
-              No anime in this list yet.
-            </p>
-          )}
+          <ScoreDistributionChart scores={animeEntries.map((e) => e.score)} />
+          <ProfileEntryGrid entries={serializedAnime} type="anime" />
         </TabsContent>
 
         <TabsContent value="manga" className="space-y-6">
           <TrackingStatsBar stats={mangaStats} type="manga" />
-          {mangaEntries.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {mangaEntries.map((entry) => (
-                <ProfileEntryCard
-                  key={entry.id}
-                  entry={JSON.parse(JSON.stringify(entry))}
-                  type="manga"
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="py-12 text-center text-muted-foreground">
-              No manga in this list yet.
-            </p>
-          )}
+          <ScoreDistributionChart scores={mangaEntries.map((e) => e.score)} />
+          <ProfileEntryGrid entries={serializedManga} type="manga" />
         </TabsContent>
       </Tabs>
     </Container>

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Pencil, Trash2, Star } from "lucide-react";
+import { Pencil, Trash2, Star, Heart } from "lucide-react";
 import { toast } from "sonner";
 import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,7 @@ import {
 import { StatusBadge } from "./status-badge";
 import { ProgressBar } from "./progress-bar";
 import { EntryEditDialog } from "./entry-edit-dialog";
-import { deleteAnimeEntry, deleteMangaEntry } from "@/actions/tracking";
+import { deleteAnimeEntry, deleteMangaEntry, toggleAnimeFavorite, toggleMangaFavorite } from "@/actions/tracking";
 import { fadeIn } from "@/lib/motion";
 
 interface EntryCardProps {
@@ -33,6 +34,7 @@ interface EntryCardProps {
 export function EntryCard({ entry, type }: EntryCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [favoriting, setFavoriting] = useState(false);
 
   const isAnime = type === "anime";
   const animeEntry = entry as AnimeEntry;
@@ -41,6 +43,22 @@ export function EntryCard({ entry, type }: EntryCardProps) {
   const current = isAnime ? animeEntry.episodesWatched : mangaEntry.chaptersRead;
   const total = isAnime ? animeEntry.totalEpisodes : mangaEntry.totalChapters;
   const progressLabel = isAnime ? "episodes" : "chapters";
+
+  async function handleToggleFavorite() {
+    setFavoriting(true);
+    try {
+      if (isAnime) {
+        await toggleAnimeFavorite(entry.id);
+      } else {
+        await toggleMangaFavorite(entry.id);
+      }
+      toast.success(entry.isFavorite ? "Removed from favorites" : "Added to favorites");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    } finally {
+      setFavoriting(false);
+    }
+  }
 
   async function handleDelete() {
     setDeleting(true);
@@ -101,6 +119,15 @@ export function EntryCard({ entry, type }: EntryCardProps) {
 
             {/* Actions */}
             <div className="flex flex-shrink-0 flex-col gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={handleToggleFavorite}
+                disabled={favoriting}
+              >
+                <Heart className={cn("h-3.5 w-3.5 transition-colors", entry.isFavorite && "fill-red-500 text-red-500")} />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

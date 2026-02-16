@@ -103,6 +103,7 @@ model AnimeEntry {
   status          String    @default("PLAN_TO_WATCH")
   score           Int?
   episodesWatched Int       @default(0)
+  isFavorite      Boolean   @default(false)
   notes           String?   @db.Text
   startedAt       DateTime?
   completedAt     DateTime?
@@ -131,6 +132,7 @@ model MangaEntry {
   score            Int?
   chaptersRead     Int       @default(0)
   volumesRead      Int       @default(0)
+  isFavorite       Boolean   @default(false)
   notes            String?   @db.Text
   startedAt        DateTime?
   completedAt      DateTime?

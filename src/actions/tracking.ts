@@ -155,3 +155,51 @@ export async function deleteMangaEntry(id: string) {
   revalidatePath("/my-list");
   return { success: true };
 }
+
+// --- Favorite Toggle Actions ---
+
+export async function toggleAnimeFavorite(id: string) {
+  const session = await requireAuth();
+
+  const entry = await prisma.animeEntry.findUnique({ where: { id } });
+  if (!entry || entry.userId !== session.user.id) throw new Error("Not found");
+
+  if (!entry.isFavorite) {
+    const [animeCount, mangaCount] = await Promise.all([
+      prisma.animeEntry.count({ where: { userId: session.user.id, isFavorite: true } }),
+      prisma.mangaEntry.count({ where: { userId: session.user.id, isFavorite: true } }),
+    ]);
+    if (animeCount + mangaCount >= 6) throw new Error("Maximum 6 favorites allowed");
+  }
+
+  await prisma.animeEntry.update({
+    where: { id },
+    data: { isFavorite: !entry.isFavorite },
+  });
+
+  revalidatePath("/my-list");
+  return { success: true, isFavorite: !entry.isFavorite };
+}
+
+export async function toggleMangaFavorite(id: string) {
+  const session = await requireAuth();
+
+  const entry = await prisma.mangaEntry.findUnique({ where: { id } });
+  if (!entry || entry.userId !== session.user.id) throw new Error("Not found");
+
+  if (!entry.isFavorite) {
+    const [animeCount, mangaCount] = await Promise.all([
+      prisma.animeEntry.count({ where: { userId: session.user.id, isFavorite: true } }),
+      prisma.mangaEntry.count({ where: { userId: session.user.id, isFavorite: true } }),
+    ]);
+    if (animeCount + mangaCount >= 6) throw new Error("Maximum 6 favorites allowed");
+  }
+
+  await prisma.mangaEntry.update({
+    where: { id },
+    data: { isFavorite: !entry.isFavorite },
+  });
+
+  revalidatePath("/my-list");
+  return { success: true, isFavorite: !entry.isFavorite };
+}
