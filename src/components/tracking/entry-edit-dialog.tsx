@@ -107,14 +107,14 @@ export function EntryEditDialog({
               <Label>
                 Episodes Watched
                 {animeEntry.totalEpisodes
-                  ? ` (out of ${animeEntry.totalEpisodes})`
+                  ? ` (of ${animeEntry.totalEpisodes})`
                   : ""}
               </Label>
               <Input
                 name="episodesWatched"
                 type="number"
                 min={0}
-                max={animeEntry.totalEpisodes ?? undefined}
+                max={animeEntry.totalEpisodes || undefined}
                 defaultValue={animeEntry.episodesWatched}
               />
             </div>
@@ -131,7 +131,7 @@ export function EntryEditDialog({
                   name="chaptersRead"
                   type="number"
                   min={0}
-                  max={mangaEntry.totalChapters ?? undefined}
+                  max={mangaEntry.totalChapters || undefined}
                   defaultValue={mangaEntry.chaptersRead}
                 />
               </div>
@@ -146,7 +146,7 @@ export function EntryEditDialog({
                   name="volumesRead"
                   type="number"
                   min={0}
-                  max={mangaEntry.totalVolumes ?? undefined}
+                  max={mangaEntry.totalVolumes || undefined}
                   defaultValue={mangaEntry.volumesRead}
                 />
               </div>
