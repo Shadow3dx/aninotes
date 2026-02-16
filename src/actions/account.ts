@@ -82,9 +82,19 @@ const createUserSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export async function createUser(formData: FormData) {
+async function requireAdmin() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (user?.role !== "ADMIN") throw new Error("Admin access required");
+  return session;
+}
+
+export async function createUser(formData: FormData) {
+  await requireAdmin();
 
   const data = createUserSchema.parse({
     name: formData.get("name"),
@@ -119,10 +129,9 @@ export async function createUser(formData: FormData) {
 }
 
 export async function deleteUser(userId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  const session = await requireAdmin();
 
-  if (userId === session.user.id) {
+  if (userId === session.user!.id) {
     throw new Error("You cannot delete your own account");
   }
 

@@ -23,11 +23,15 @@ const sidebarLinks = [
   { href: "/admin/tags", label: "Tags", icon: Tags },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
   { href: "/admin/comments", label: "Comments", icon: MessageCircle },
-  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  isAdmin?: boolean;
+}
+
+export function AdminSidebar({ isAdmin }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -42,7 +46,7 @@ export function AdminSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 p-4">
-        {sidebarLinks.map((link) => {
+        {sidebarLinks.filter((link) => !("adminOnly" in link && link.adminOnly) || isAdmin).map((link) => {
           const isActive =
             link.href === "/admin"
               ? pathname === "/admin"

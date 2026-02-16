@@ -11,6 +11,13 @@ export default async function AdminUsersPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  // Only admins can manage users
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (currentUser?.role !== "ADMIN") redirect("/admin");
+
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "asc" },
     include: { _count: { select: { posts: true } } },
