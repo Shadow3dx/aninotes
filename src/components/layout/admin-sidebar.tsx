@@ -9,6 +9,7 @@ import {
   Tags,
   FolderOpen,
   MessageCircle,
+  Users,
   Settings,
   ExternalLink,
   LogOut,
@@ -22,6 +23,7 @@ const sidebarLinks = [
   { href: "/admin/tags", label: "Tags", icon: Tags },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
   { href: "/admin/comments", label: "Comments", icon: MessageCircle },
+  { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

@@ -7,7 +7,10 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix: split auth config for Vercel Edge middleware\n\nSeparate edge-compatible auth config \\(no Prisma/bcrypt\\) from full auth\nconfig to stay under Vercel''s 1MB Edge Function limit.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

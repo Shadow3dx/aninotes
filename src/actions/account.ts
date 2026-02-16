@@ -74,3 +74,63 @@ export async function changePassword(formData: FormData) {
   revalidatePath("/admin");
   return { success: true };
 }
+
+const createUserSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email address"),
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_-]+$/),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export async function createUser(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const data = createUserSchema.parse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    username: formData.get("username"),
+    password: formData.get("password"),
+  });
+
+  const existingEmail = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
+  if (existingEmail) throw new Error("Email is already taken");
+
+  const existingUsername = await prisma.user.findUnique({
+    where: { username: data.username },
+  });
+  if (existingUsername) throw new Error("Username is already taken");
+
+  const passwordHash = await bcrypt.hash(data.password, 12);
+
+  await prisma.user.create({
+    data: {
+      name: data.name,
+      email: data.email,
+      username: data.username,
+      passwordHash,
+    },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
+export async function deleteUser(userId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  if (userId === session.user.id) {
+    throw new Error("You cannot delete your own account");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("User not found");
+
+  await prisma.user.delete({ where: { id: userId } });
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}

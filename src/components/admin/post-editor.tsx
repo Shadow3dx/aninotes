@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { PostContent } from "@/components/posts/post-content";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createPost, updatePost } from "@/actions/posts";
-import { ImageUpload } from "@/components/admin/image-upload";
+
 import { MarkdownToolbar } from "@/components/admin/markdown-toolbar";
 import { slugify } from "@/lib/utils";
 import type { Post, Tag, Category } from "@prisma/client";
@@ -255,15 +255,26 @@ export function PostEditor({ post, allTags, allCategories }: PostEditorProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label>Cover Image</Label>
-          <ImageUpload
+          <Label htmlFor="coverImage">Cover Image URL</Label>
+          <Input
+            id="coverImage"
             value={coverImage}
-            onChange={(url) => {
-              setCoverImage(url);
+            onChange={(e) => {
+              setCoverImage(e.target.value);
               markDirty();
             }}
-            label="Cover"
+            placeholder="https://example.com/image.jpg"
           />
+          {coverImage && (
+            <div className="relative mt-2 aspect-video overflow-hidden rounded-lg border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverImage}
+                alt="Cover preview"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
         </div>
       </div>
 
