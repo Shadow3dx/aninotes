@@ -78,7 +78,23 @@ export function PostCard({ post }: PostCardProps) {
 
             {/* Footer: author + date + reading time */}
             <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">
+              <span
+                role="link"
+                tabIndex={0}
+                className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `/profile/${post.author.username}`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = `/profile/${post.author.username}`;
+                  }
+                }}
+              >
                 {post.author.name}
               </span>
               <span className="flex items-center gap-1">

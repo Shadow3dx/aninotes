@@ -70,6 +70,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const rawComments = await prisma.comment.findMany({
     where: { postId: post.id },
     orderBy: { createdAt: "asc" },
+    include: { user: { select: { username: true } } },
   });
 
   // Build tree structure
@@ -80,6 +81,7 @@ export default async function PostPage({ params }: PostPageProps) {
         id: c.id,
         body: c.body,
         authorName: c.authorName,
+        username: c.user?.username ?? null,
         createdAt: c.createdAt.toISOString(),
         replies: buildTree(c.id),
       }));
@@ -146,9 +148,12 @@ export default async function PostPage({ params }: PostPageProps) {
 
             {/* Meta row */}
             <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">
+              <Link
+                href={`/profile/${post.author.username}`}
+                className="font-medium text-foreground hover:text-primary transition-colors"
+              >
                 {post.author.name}
-              </span>
+              </Link>
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 {formatDate(post.publishedAt ?? post.createdAt)}

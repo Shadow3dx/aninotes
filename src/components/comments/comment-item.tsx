@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { MessageCircle, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ export interface CommentData {
   id: string;
   body: string;
   authorName: string;
+  username?: string | null;
   createdAt: string;
   replies: CommentData[];
 }
@@ -55,7 +57,16 @@ export function CommentItem({
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
             <User className="h-3.5 w-3.5 text-primary" />
           </div>
-          <span className="text-sm font-medium">{comment.authorName}</span>
+          {comment.username ? (
+            <Link
+              href={`/profile/${comment.username}`}
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              {comment.authorName}
+            </Link>
+          ) : (
+            <span className="text-sm font-medium">{comment.authorName}</span>
+          )}
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.createdAt), {
               addSuffix: true,

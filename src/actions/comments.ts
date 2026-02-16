@@ -40,12 +40,16 @@ export async function addComment(formData: FormData) {
     }
   }
 
+  // If user is logged in, attach their userId
+  const session = await auth();
+
   await prisma.comment.create({
     data: {
       body: data.body,
       authorName: data.authorName,
       postId: data.postId,
       parentId: data.parentId ?? null,
+      userId: session?.user?.id ?? null,
     },
   });
 
