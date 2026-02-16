@@ -19,6 +19,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   posts        Post[]
+  animeEntries AnimeEntry[] @relation("UserAnimeEntries")
+  mangaEntries MangaEntry[] @relation("UserMangaEntries")
 }
 
 model Post {
@@ -81,6 +83,60 @@ model Category {
   name  String         @unique
   slug  String         @unique
   posts PostCategory[]
+}
+
+model AnimeEntry {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation("UserAnimeEntries", fields: [userId], references: [id], onDelete: Cascade)
+  malId           Int
+  title           String
+  imageUrl        String?
+  synopsis        String?   @db.Text
+  totalEpisodes   Int?
+  mediaType       String?
+  airingStatus    String?
+  malScore        Float?
+  status          String    @default("PLAN_TO_WATCH")
+  score           Int?
+  episodesWatched Int       @default(0)
+  notes           String?   @db.Text
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, malId])
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model MangaEntry {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation("UserMangaEntries", fields: [userId], references: [id], onDelete: Cascade)
+  malId            Int
+  title            String
+  imageUrl         String?
+  synopsis         String?   @db.Text
+  totalChapters    Int?
+  totalVolumes     Int?
+  mediaType        String?
+  publishingStatus String?
+  malScore         Float?
+  status           String    @default("PLAN_TO_READ")
+  score            Int?
+  chaptersRead     Int       @default(0)
+  volumesRead      Int       @default(0)
+  notes            String?   @db.Text
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([userId, malId])
+  @@index([userId])
+  @@index([userId, status])
 }
 
 model PostTag {

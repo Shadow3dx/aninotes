@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Menu, Search, Shield } from "lucide-react";
+import { Menu, Search, Shield, Library, LogIn } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -20,7 +20,8 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const role = session?.user?.role;
   const [open, setOpen] = useState(false);
 
   return (
@@ -74,9 +75,24 @@ export function Navbar() {
             </Link>
             <ThemeToggle />
             {session && (
-              <Link href="/admin">
+              <Link href="/my-list" className="hidden md:inline-flex">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Library className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+            {session && (role === "ADMIN" || role === "EDITOR") && (
+              <Link href="/admin" className="hidden md:inline-flex">
                 <Button variant="ghost" size="icon" className="h-9 w-9">
                   <Shield className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+            {!session && status !== "loading" && (
+              <Link href="/login" className="hidden md:inline-flex">
+                <Button variant="ghost" size="sm" className="gap-1.5">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
                 </Button>
               </Link>
             )}
@@ -108,11 +124,29 @@ export function Navbar() {
                   ))}
                   {session && (
                     <Link
+                      href="/my-list"
+                      onClick={() => setOpen(false)}
+                      className="text-lg font-medium text-muted-foreground hover:text-foreground"
+                    >
+                      My List
+                    </Link>
+                  )}
+                  {session && (role === "ADMIN" || role === "EDITOR") && (
+                    <Link
                       href="/admin"
                       onClick={() => setOpen(false)}
                       className="text-lg font-medium text-muted-foreground hover:text-foreground"
                     >
                       Admin
+                    </Link>
+                  )}
+                  {!session && status !== "loading" && (
+                    <Link
+                      href="/login"
+                      onClick={() => setOpen(false)}
+                      className="text-lg font-medium text-primary hover:text-primary/80"
+                    >
+                      Sign In
                     </Link>
                   )}
                 </div>

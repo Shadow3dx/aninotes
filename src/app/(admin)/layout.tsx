@@ -19,6 +19,10 @@ export default async function AdminLayout({
     select: { role: true },
   });
 
+  if (!user || !["ADMIN", "EDITOR"].includes(user.role)) {
+    redirect("/my-list");
+  }
+
   return (
     <div className="flex h-screen">
       <AdminSidebar isAdmin={user?.role === "ADMIN"} />

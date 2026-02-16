@@ -1,9 +1,10 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +32,15 @@ export default function LoginPage() {
       toast.error("Invalid email or password");
     } else {
       toast.success("Welcome back!");
-      router.push("/admin");
+      // Fetch updated session to determine redirect based on role
+      const res = await fetch("/api/auth/session");
+      const session = await res.json();
+      const role = session?.user?.role;
+      if (role === "ADMIN" || role === "EDITOR") {
+        router.push("/admin");
+      } else {
+        router.push("/my-list");
+      }
       router.refresh();
     }
   }
@@ -43,7 +52,7 @@ export default function LoginPage() {
           Ani<span className="text-primary">Notes</span>
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Sign in to the admin dashboard
+          Sign in to your account
         </p>
       </CardHeader>
       <CardContent>
@@ -71,6 +80,12 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="text-primary hover:underline">
+            Register
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

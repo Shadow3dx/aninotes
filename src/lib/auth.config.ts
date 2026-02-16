@@ -9,22 +9,25 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isAdmin = nextUrl.pathname.startsWith("/admin");
+      const isMyList = nextUrl.pathname.startsWith("/my-list");
       const isLoggedIn = !!auth?.user;
 
-      if (isAdmin && !isLoggedIn) {
+      if ((isAdmin || isMyList) && !isLoggedIn) {
         return false; // redirects to signIn page
       }
       return true;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id!;
+        token.role = (user as { role?: string }).role ?? "READER";
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        (session.user as { id: string }).id = token.id as string;
+        (session.user as { role: string }).role = (token.role as string) || "READER";
       }
       return session;
     },

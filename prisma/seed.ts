@@ -329,6 +329,74 @@ This is peak sports anime. Whether you've been following Haikyuu!! for years or 
     console.log(`Created post: ${created.title}`);
   }
 
+  // Create a sample READER user with tracking entries
+  const readerHash = await bcrypt.hash("reader123!", 12);
+  const reader = await prisma.user.upsert({
+    where: { email: "reader@aninotes.com" },
+    update: {},
+    create: {
+      name: "Sample Reader",
+      email: "reader@aninotes.com",
+      username: "reader",
+      passwordHash: readerHash,
+      role: "READER",
+    },
+  });
+
+  const sampleAnime = [
+    {
+      malId: 16498,
+      title: "Shingeki no Kyojin",
+      imageUrl: "https://cdn.myanimelist.net/images/anime/10/47347.jpg",
+      totalEpisodes: 25,
+      mediaType: "TV",
+      status: "COMPLETED",
+      score: 9,
+      episodesWatched: 25,
+    },
+    {
+      malId: 21,
+      title: "One Punch Man",
+      imageUrl: "https://cdn.myanimelist.net/images/anime/12/76049.jpg",
+      totalEpisodes: 12,
+      mediaType: "TV",
+      status: "COMPLETED",
+      score: 8,
+      episodesWatched: 12,
+    },
+    {
+      malId: 5114,
+      title: "Fullmetal Alchemist: Brotherhood",
+      imageUrl: "https://cdn.myanimelist.net/images/anime/1208/94745.jpg",
+      totalEpisodes: 64,
+      mediaType: "TV",
+      status: "WATCHING",
+      score: null,
+      episodesWatched: 20,
+    },
+    {
+      malId: 1535,
+      title: "Death Note",
+      imageUrl: "https://cdn.myanimelist.net/images/anime/9/9453.jpg",
+      totalEpisodes: 37,
+      mediaType: "TV",
+      status: "PLAN_TO_WATCH",
+      score: null,
+      episodesWatched: 0,
+    },
+  ];
+
+  for (const anime of sampleAnime) {
+    await prisma.animeEntry.upsert({
+      where: {
+        userId_malId: { userId: reader.id, malId: anime.malId },
+      },
+      update: {},
+      create: { userId: reader.id, ...anime },
+    });
+  }
+  console.log(`Created reader user with ${sampleAnime.length} anime entries`);
+
   console.log("Seed completed successfully!");
 }
 
