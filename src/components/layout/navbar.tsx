@@ -111,12 +111,14 @@ export function Navbar() {
                     <p className="text-xs text-muted-foreground">@{session.user.username}</p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/profile/${session.user.username}`}>
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
+                  {session.user.username && (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/profile/${session.user.username}`}>
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/my-list">
                       <Library className="mr-2 h-4 w-4" />
@@ -186,13 +188,15 @@ export function Navbar() {
                   ))}
                   {session && (
                     <>
-                      <Link
-                        href={`/profile/${session.user.username}`}
-                        onClick={() => setOpen(false)}
-                        className="text-lg font-medium text-muted-foreground hover:text-foreground"
-                      >
-                        Profile
-                      </Link>
+                      {session.user.username && (
+                        <Link
+                          href={`/profile/${session.user.username}`}
+                          onClick={() => setOpen(false)}
+                          className="text-lg font-medium text-muted-foreground hover:text-foreground"
+                        >
+                          Profile
+                        </Link>
+                      )}
                       <Link
                         href="/my-list"
                         onClick={() => setOpen(false)}
