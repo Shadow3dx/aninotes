@@ -10,24 +10,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateProfile } from "@/actions/account";
 
-interface UpdateProfileFormProps {
-  currentName: string;
-  currentEmail: string;
-  currentUsername: string;
-  currentBio: string;
+interface ProfileSettingsFormProps {
+  name: string;
+  email: string;
+  username: string;
+  bio: string;
 }
 
-export function UpdateProfileForm({
-  currentName,
-  currentEmail,
-  currentUsername,
-  currentBio,
-}: UpdateProfileFormProps) {
+export function ProfileSettingsForm({
+  name: initialName,
+  email: initialEmail,
+  username: initialUsername,
+  bio: initialBio,
+}: ProfileSettingsFormProps) {
   const [saving, setSaving] = useState(false);
-  const [name, setName] = useState(currentName);
-  const [email, setEmail] = useState(currentEmail);
-  const [username, setUsername] = useState(currentUsername);
-  const [bio, setBio] = useState(currentBio);
+  const [name, setName] = useState(initialName);
+  const [email, setEmail] = useState(initialEmail);
+  const [username, setUsername] = useState(initialUsername);
+  const [bio, setBio] = useState(initialBio);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,7 +51,7 @@ export function UpdateProfileForm({
   }
 
   return (
-    <Card className="max-w-md">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <User className="h-5 w-5" />
@@ -86,11 +86,11 @@ export function UpdateProfileForm({
               pattern="^[a-zA-Z0-9_-]+$"
             />
             <p className="text-xs text-muted-foreground">
-              Letters, numbers, hyphens, and underscores only
+              Used for your profile URL. Letters, numbers, hyphens, and underscores only.
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Login Email</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -99,6 +99,9 @@ export function UpdateProfileForm({
               placeholder="you@example.com"
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Used to sign in to your account
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
@@ -111,7 +114,7 @@ export function UpdateProfileForm({
               maxLength={500}
             />
             <p className="text-xs text-muted-foreground">
-              {bio.length}/500 characters
+              {bio.length}/500 characters. Shown on your public profile.
             </p>
           </div>
           <Button type="submit" disabled={saving}>

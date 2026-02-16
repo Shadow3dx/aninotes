@@ -3,10 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Menu, Search, Shield, Library, LogIn } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Menu, Search, Shield, Library, LogIn, User, Settings, LogOut } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Container } from "./container";
 import { cn } from "@/lib/utils";
@@ -23,6 +31,13 @@ export function Navbar() {
   const { data: session, status } = useSession();
   const role = session?.user?.role;
   const [open, setOpen] = useState(false);
+
+  const initials = session?.user?.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
@@ -74,20 +89,67 @@ export function Navbar() {
               </Button>
             </Link>
             <ThemeToggle />
+
+            {/* User dropdown (logged in) */}
             {session && (
-              <Link href="/my-list" className="hidden md:inline-flex">
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Library className="h-4 w-4" />
-                </Button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="hidden md:inline-flex">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      {session.user.image && (
+                        <AvatarImage src={session.user.image} alt={session.user.name ?? ""} />
+                      )}
+                      <AvatarFallback className="text-xs">
+                        {initials || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{session.user.name}</p>
+                    <p className="text-xs text-muted-foreground">@{session.user.username}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href={`/profile/${session.user.username}`}>
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/my-list">
+                      <Library className="mr-2 h-4 w-4" />
+                      My List
+                    </Link>
+                  </DropdownMenuItem>
+                  {(role === "ADMIN" || role === "EDITOR") && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link href="/my-list/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-            {session && (role === "ADMIN" || role === "EDITOR") && (
-              <Link href="/admin" className="hidden md:inline-flex">
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Shield className="h-4 w-4" />
-                </Button>
-              </Link>
-            )}
+
+            {/* Sign in (logged out) */}
             {!session && status !== "loading" && (
               <Link href="/login" className="hidden md:inline-flex">
                 <Button variant="ghost" size="sm" className="gap-1.5">
@@ -123,13 +185,29 @@ export function Navbar() {
                     </Link>
                   ))}
                   {session && (
-                    <Link
-                      href="/my-list"
-                      onClick={() => setOpen(false)}
-                      className="text-lg font-medium text-muted-foreground hover:text-foreground"
-                    >
-                      My List
-                    </Link>
+                    <>
+                      <Link
+                        href={`/profile/${session.user.username}`}
+                        onClick={() => setOpen(false)}
+                        className="text-lg font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        href="/my-list"
+                        onClick={() => setOpen(false)}
+                        className="text-lg font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        My List
+                      </Link>
+                      <Link
+                        href="/my-list/settings"
+                        onClick={() => setOpen(false)}
+                        className="text-lg font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        Settings
+                      </Link>
+                    </>
                   )}
                   {session && (role === "ADMIN" || role === "EDITOR") && (
                     <Link
@@ -140,14 +218,26 @@ export function Navbar() {
                       Admin
                     </Link>
                   )}
-                  {!session && status !== "loading" && (
-                    <Link
-                      href="/login"
-                      onClick={() => setOpen(false)}
-                      className="text-lg font-medium text-primary hover:text-primary/80"
+                  {session ? (
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        signOut({ callbackUrl: "/" });
+                      }}
+                      className="text-left text-lg font-medium text-destructive hover:text-destructive/80"
                     >
-                      Sign In
-                    </Link>
+                      Sign Out
+                    </button>
+                  ) : (
+                    status !== "loading" && (
+                      <Link
+                        href="/login"
+                        onClick={() => setOpen(false)}
+                        className="text-lg font-medium text-primary hover:text-primary/80"
+                      >
+                        Sign In
+                      </Link>
+                    )
                   )}
                 </div>
               </SheetContent>

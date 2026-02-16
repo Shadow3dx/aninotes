@@ -9,6 +9,8 @@ import { z } from "zod";
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   email: z.string().email("Invalid email address"),
+  username: z.string().min(3, "Username must be at least 3 characters").max(30).regex(/^[a-zA-Z0-9_-]+$/, "Only letters, numbers, hyphens, and underscores"),
+  bio: z.string().max(500).optional().default(""),
 });
 
 export async function updateProfile(formData: FormData) {
@@ -18,22 +20,34 @@ export async function updateProfile(formData: FormData) {
   const data = updateProfileSchema.parse({
     name: formData.get("name"),
     email: formData.get("email"),
+    username: formData.get("username"),
+    bio: formData.get("bio") || "",
   });
 
   // Check if email is taken by another user
-  const existing = await prisma.user.findUnique({
+  const existingEmail = await prisma.user.findUnique({
     where: { email: data.email },
   });
-  if (existing && existing.id !== session.user.id) {
+  if (existingEmail && existingEmail.id !== session.user.id) {
     throw new Error("Email is already taken");
+  }
+
+  // Check if username is taken by another user
+  const existingUsername = await prisma.user.findUnique({
+    where: { username: data.username },
+  });
+  if (existingUsername && existingUsername.id !== session.user.id) {
+    throw new Error("Username is already taken");
   }
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: data.name, email: data.email },
+    data: { name: data.name, email: data.email, username: data.username, bio: data.bio },
   });
 
   revalidatePath("/admin");
+  revalidatePath(`/profile/${data.username}`);
+  revalidatePath("/my-list/settings");
   return { success: true };
 }
 
