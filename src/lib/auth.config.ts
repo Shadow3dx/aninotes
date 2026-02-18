@@ -10,9 +10,10 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isAdmin = nextUrl.pathname.startsWith("/admin");
       const isMyList = nextUrl.pathname.startsWith("/my-list");
+      const isMessages = nextUrl.pathname.startsWith("/messages");
       const isLoggedIn = !!auth?.user;
 
-      if ((isAdmin || isMyList) && !isLoggedIn) {
+      if ((isAdmin || isMyList || isMessages) && !isLoggedIn) {
         return false; // redirects to signIn page
       }
       return true;

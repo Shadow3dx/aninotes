@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Calendar, User as UserIcon, Film, BookOpen } from "lucide-react";
+import { Calendar, User as UserIcon, Film, BookOpen, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { Container } from "@/components/layout/container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +12,9 @@ import { ScoreDistributionChart } from "@/components/tracking/score-distribution
 import { ProfileFavorites } from "@/components/tracking/profile-favorites";
 import { ProfileStatsOverview } from "@/components/tracking/profile-stats-overview";
 import { ProfileActivityTimeline } from "@/components/tracking/profile-activity-timeline";
+import { ProfileCommentSection } from "@/components/profile-comments/profile-comment-section";
+import { SendMessageButton } from "@/components/messages/send-message-button";
+import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import type { TrackingStats } from "@/types";
 
@@ -134,6 +138,43 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 8);
 
+  // Fetch session and profile comments
+  const session = await auth();
+  const isLoggedIn = !!session?.user?.id;
+  const isProfileOwner = session?.user?.id === user.id;
+
+  const rawProfileComments = await prisma.profileComment.findMany({
+    where: { profileId: user.id },
+    orderBy: { createdAt: "asc" },
+    include: { user: { select: { name: true, username: true } } },
+  });
+
+  // Build comment tree
+  interface CommentNode {
+    id: string;
+    body: string;
+    userName: string;
+    username: string;
+    createdAt: string;
+    isAuthor: boolean;
+    replies: CommentNode[];
+  }
+
+  function buildCommentTree(parentId: string | null): CommentNode[] {
+    return rawProfileComments
+      .filter((c) => c.parentId === parentId)
+      .map((c) => ({
+        id: c.id,
+        body: c.body,
+        userName: c.user.name,
+        username: c.user.username,
+        createdAt: c.createdAt.toISOString(),
+        isAuthor: c.userId === session?.user?.id,
+        replies: buildCommentTree(c.id),
+      }));
+  }
+  const profileComments = buildCommentTree(null);
+
   // Serialize entries for client components
   const serializedAnime = JSON.parse(JSON.stringify(animeEntries));
   const serializedManga = JSON.parse(JSON.stringify(mangaEntries));
@@ -167,6 +208,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 {mangaEntries.length} manga
               </span>
             </div>
+            {isLoggedIn && !isProfileOwner && (
+              <div className="mt-3">
+                <SendMessageButton recipientId={user.id} />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -185,6 +231,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
       {/* Recent Activity */}
       <ProfileActivityTimeline entries={recentActivity} />
+
+      {/* Profile Comments */}
+      <ProfileCommentSection
+        profileId={user.id}
+        comments={profileComments}
+        isLoggedIn={isLoggedIn}
+        isProfileOwner={isProfileOwner}
+      />
 
       {/* Anime/Manga Lists */}
       <Tabs defaultValue="anime">

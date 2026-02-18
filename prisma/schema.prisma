@@ -20,8 +20,13 @@ model User {
   updatedAt    DateTime @updatedAt
   posts        Post[]
   comments     Comment[]
-  animeEntries AnimeEntry[] @relation("UserAnimeEntries")
-  mangaEntries MangaEntry[] @relation("UserMangaEntries")
+  animeEntries     AnimeEntry[]     @relation("UserAnimeEntries")
+  mangaEntries     MangaEntry[]     @relation("UserMangaEntries")
+  profileComments  ProfileComment[] @relation("ProfileComments")
+  commentedOn      ProfileComment[] @relation("ProfileCommentAuthor")
+  conversations1   Conversation[]   @relation("Conversations1")
+  conversations2   Conversation[]   @relation("Conversations2")
+  sentMessages     Message[]        @relation("SentMessages")
 }
 
 model Post {
@@ -160,4 +165,48 @@ model PostCategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([postId, categoryId])
+}
+
+model ProfileComment {
+  id        String           @id @default(cuid())
+  body      String
+  userId    String
+  user      User             @relation("ProfileCommentAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  profileId String
+  profile   User             @relation("ProfileComments", fields: [profileId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    ProfileComment?  @relation("ProfileCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ProfileComment[] @relation("ProfileCommentReplies")
+  createdAt DateTime         @default(now())
+
+  @@index([profileId])
+  @@index([parentId])
+}
+
+model Conversation {
+  id             String    @id @default(cuid())
+  participant1Id String
+  participant1   User      @relation("Conversations1", fields: [participant1Id], references: [id], onDelete: Cascade)
+  participant2Id String
+  participant2   User      @relation("Conversations2", fields: [participant2Id], references: [id], onDelete: Cascade)
+  messages       Message[]
+  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  body           String       @db.Text
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
 }

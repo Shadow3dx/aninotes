@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Menu, Search, Shield, Library, LogIn, User, Settings, LogOut } from "lucide-react";
+import { Menu, Search, Shield, Library, LogIn, User, Settings, LogOut, MessageCircle } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { UnreadBadge } from "./unread-badge";
 import { Container } from "./container";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -125,6 +126,13 @@ export function Navbar() {
                       My List
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/messages" className="relative">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Messages
+                      <UnreadBadge />
+                    </Link>
+                  </DropdownMenuItem>
                   {(role === "ADMIN" || role === "EDITOR") && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin">
@@ -203,6 +211,14 @@ export function Navbar() {
                         className="text-lg font-medium text-muted-foreground hover:text-foreground"
                       >
                         My List
+                      </Link>
+                      <Link
+                        href="/messages"
+                        onClick={() => setOpen(false)}
+                        className="relative inline-flex items-center gap-2 text-lg font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        Messages
+                        <UnreadBadge />
                       </Link>
                       <Link
                         href="/my-list/settings"
