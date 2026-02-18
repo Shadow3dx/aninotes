@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { getOrCreateConversation } from "@/actions/messages";
 
@@ -21,8 +22,8 @@ export function SendMessageButton({ recipientId }: SendMessageButtonProps) {
       if (conversationId) {
         router.push(`/messages/${conversationId}`);
       }
-    } catch {
-      // Silently ignore
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }

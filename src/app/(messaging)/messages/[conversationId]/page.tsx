@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { Container } from "@/components/layout/container";
 import { Button } from "@/components/ui/button";
 import { MessageThread } from "@/components/messages/message-thread";
-import { markConversationRead } from "@/actions/messages";
 
 interface ConversationPageProps {
   params: Promise<{ conversationId: string }>;
@@ -71,8 +70,15 @@ export default async function ConversationPage({ params }: ConversationPageProps
     },
   });
 
-  // Mark messages as read
-  await markConversationRead(conversationId);
+  // Mark messages as read (direct Prisma call, not a server action)
+  await prisma.message.updateMany({
+    where: {
+      conversationId,
+      senderId: { not: userId },
+      readAt: null,
+    },
+    data: { readAt: new Date() },
+  });
 
   const serializedMessages = messages.map((m) => ({
     id: m.id,
