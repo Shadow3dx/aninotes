@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Container } from "@/components/layout/container";
 import { TrackingDashboard } from "@/components/tracking/tracking-dashboard";
+import { HistoryLog } from "@/components/tracking/history-log";
+import { RecommendationsSection } from "@/components/tracking/recommendations-section";
+import { getRecommendations } from "@/lib/recommendations";
 import type { TrackingStats } from "@/types";
 
 export const metadata = { title: "My List | AniNotes" };
@@ -11,7 +14,7 @@ export default async function MyListPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const [animeEntries, mangaEntries] = await Promise.all([
+  const [animeEntries, mangaEntries, entryHistory] = await Promise.all([
     prisma.animeEntry.findMany({
       where: { userId: session.user.id },
       orderBy: { updatedAt: "desc" },
@@ -19,6 +22,11 @@ export default async function MyListPage() {
     prisma.mangaEntry.findMany({
       where: { userId: session.user.id },
       orderBy: { updatedAt: "desc" },
+    }),
+    prisma.entryHistory.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
     }),
   ]);
 
@@ -60,6 +68,8 @@ export default async function MyListPage() {
     ),
   };
 
+  const recommendations = await getRecommendations(session.user.id);
+
   return (
     <Container className="py-8">
       <TrackingDashboard
@@ -68,6 +78,18 @@ export default async function MyListPage() {
         animeStats={animeStats}
         mangaStats={mangaStats}
       />
+      <HistoryLog
+        entries={entryHistory.map((h) => ({
+          id: h.id,
+          entryType: h.entryType,
+          entryTitle: h.entryTitle,
+          field: h.field,
+          oldValue: h.oldValue,
+          newValue: h.newValue,
+          createdAt: h.createdAt.toISOString(),
+        }))}
+      />
+      <RecommendationsSection recommendations={recommendations} />
     </Container>
   );
 }

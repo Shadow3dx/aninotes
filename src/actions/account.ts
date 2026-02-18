@@ -11,6 +11,7 @@ const updateProfileSchema = z.object({
   email: z.string().email("Invalid email address"),
   username: z.string().min(3, "Username must be at least 3 characters").max(30).regex(/^[a-zA-Z0-9_-]+$/, "Only letters, numbers, hyphens, and underscores"),
   bio: z.string().max(500).optional().default(""),
+  image: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
 });
 
 export async function updateProfile(formData: FormData) {
@@ -22,6 +23,7 @@ export async function updateProfile(formData: FormData) {
     email: formData.get("email"),
     username: formData.get("username"),
     bio: formData.get("bio") || "",
+    image: formData.get("image") || "",
   });
 
   // Check if email is taken by another user
@@ -42,7 +44,7 @@ export async function updateProfile(formData: FormData) {
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: data.name, email: data.email, username: data.username, bio: data.bio },
+    data: { name: data.name, email: data.email, username: data.username, bio: data.bio, image: data.image || null },
   });
 
   revalidatePath("/admin");

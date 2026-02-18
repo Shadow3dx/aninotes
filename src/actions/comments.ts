@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
 
 const addCommentSchema = z.object({
@@ -23,7 +24,7 @@ export async function addComment(formData: FormData) {
   // Verify post exists and is published
   const post = await prisma.post.findUnique({
     where: { id: data.postId },
-    select: { slug: true, status: true },
+    select: { slug: true, status: true, authorId: true, title: true },
   });
   if (!post || post.status !== "PUBLISHED") {
     throw new Error("Post not found");
@@ -52,6 +53,17 @@ export async function addComment(formData: FormData) {
       userId: session?.user?.id ?? null,
     },
   });
+
+  // Notify post author
+  if (post.authorId) {
+    await createNotification({
+      userId: post.authorId,
+      type: "COMMENT",
+      relatedUserId: session?.user?.id ?? undefined,
+      relatedPostId: post.slug,
+      body: `${data.authorName} commented on "${post.title}"`,
+    });
+  }
 
   revalidatePath(`/posts/${post.slug}`);
   return { success: true };

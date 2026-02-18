@@ -10,6 +10,8 @@ import { PostContent } from "@/components/posts/post-content";
 import { TableOfContents } from "@/components/posts/table-of-contents";
 import { ReviewMetadata } from "@/components/posts/review-metadata";
 import { ShareButton } from "@/components/posts/share-button";
+import { ReactionBar } from "@/components/posts/reaction-bar";
+import { getPostReactions } from "@/actions/reactions";
 import { RelatedPosts } from "@/components/posts/related-posts";
 import { CommentSection } from "@/components/comments/comment-section";
 import { TagPill } from "@/components/tags/tag-pill";
@@ -69,6 +71,10 @@ export default async function PostPage({ params }: PostPageProps) {
   const headings = extractHeadings(post.contentMarkdown);
   const session = await auth();
   const isAdmin = !!session?.user;
+  const isLoggedIn = !!session?.user?.id;
+
+  // Get reactions
+  const { counts: reactionCounts, userReactions } = await getPostReactions(post.id);
 
   // Get comments as a nested tree
   const rawComments = await prisma.comment.findMany({
@@ -170,6 +176,16 @@ export default async function PostPage({ params }: PostPageProps) {
                 {readingTime(post.contentMarkdown)}
               </span>
               <ShareButton />
+            </div>
+
+            {/* Reactions */}
+            <div className="mt-4">
+              <ReactionBar
+                postId={post.id}
+                initialCounts={reactionCounts}
+                initialUserReactions={userReactions}
+                isLoggedIn={isLoggedIn}
+              />
             </div>
 
             {/* Tags & Categories */}

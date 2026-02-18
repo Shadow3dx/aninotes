@@ -15,6 +15,7 @@ interface ProfileSettingsFormProps {
   email: string;
   username: string;
   bio: string;
+  image: string;
 }
 
 export function ProfileSettingsForm({
@@ -22,12 +23,14 @@ export function ProfileSettingsForm({
   email: initialEmail,
   username: initialUsername,
   bio: initialBio,
+  image: initialImage,
 }: ProfileSettingsFormProps) {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
   const [username, setUsername] = useState(initialUsername);
   const [bio, setBio] = useState(initialBio);
+  const [image, setImage] = useState(initialImage);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,6 +42,7 @@ export function ProfileSettingsForm({
       formData.set("email", email);
       formData.set("username", username);
       formData.set("bio", bio);
+      formData.set("image", image);
       await updateProfile(formData);
       toast.success("Profile updated!");
     } catch (err) {
@@ -115,6 +119,28 @@ export function ProfileSettingsForm({
             />
             <p className="text-xs text-muted-foreground">
               {bio.length}/500 characters. Shown on your public profile.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Avatar URL</Label>
+            <div className="flex items-center gap-3">
+              {image && (
+                <img
+                  src={image}
+                  alt="Avatar preview"
+                  className="h-10 w-10 rounded-full object-cover border"
+                />
+              )}
+              <Input
+                id="image"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder="https://example.com/avatar.jpg"
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Link to an image for your profile picture
             </p>
           </div>
           <Button type="submit" disabled={saving}>

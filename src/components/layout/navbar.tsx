@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Menu, Search, Shield, Library, LogIn, User, Settings, LogOut, MessageCircle } from "lucide-react";
+import { Menu, Search, Shield, Library, LogIn, User, Settings, LogOut, MessageCircle, Bell } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { UnreadBadge } from "./unread-badge";
+import { NotificationBadge } from "./notification-badge";
 import { Container } from "./container";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -26,6 +27,7 @@ const navLinks = [
   { href: "/search", label: "Search" },
   { href: "/tags", label: "Tags" },
   { href: "/members", label: "Members" },
+  { href: "/stats", label: "Stats" },
 ];
 
 export function Navbar() {
@@ -91,6 +93,16 @@ export function Navbar() {
               </Button>
             </Link>
             <ThemeToggle />
+
+            {/* Notification bell (logged in) */}
+            {session && (
+              <Link href="/notifications" className="relative hidden md:inline-flex">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Bell className="h-4 w-4" />
+                  <NotificationBadge />
+                </Button>
+              </Link>
+            )}
 
             {/* User dropdown (logged in) */}
             {session && (
@@ -220,6 +232,14 @@ export function Navbar() {
                       >
                         Messages
                         <UnreadBadge />
+                      </Link>
+                      <Link
+                        href="/notifications"
+                        onClick={() => setOpen(false)}
+                        className="relative inline-flex items-center gap-2 text-lg font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        Notifications
+                        <NotificationBadge />
                       </Link>
                       <Link
                         href="/my-list/settings"

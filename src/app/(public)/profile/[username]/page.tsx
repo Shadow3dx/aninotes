@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Calendar, User as UserIcon, Film, BookOpen, MessageCircle } from "lucide-react";
+import { Calendar, User as UserIcon, Film, BookOpen } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { Container } from "@/components/layout/container";
@@ -12,9 +12,10 @@ import { ScoreDistributionChart } from "@/components/tracking/score-distribution
 import { ProfileFavorites } from "@/components/tracking/profile-favorites";
 import { ProfileStatsOverview } from "@/components/tracking/profile-stats-overview";
 import { ProfileActivityTimeline } from "@/components/tracking/profile-activity-timeline";
+import { HistoryLog } from "@/components/tracking/history-log";
 import { ProfileCommentSection } from "@/components/profile-comments/profile-comment-section";
 import { SendMessageButton } from "@/components/messages/send-message-button";
-import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/profile/follow-button";
 import { formatDate } from "@/lib/utils";
 import type { TrackingStats } from "@/types";
 
@@ -53,7 +54,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const user = await getUser(username);
   if (!user) notFound();
 
-  const [animeEntries, mangaEntries] = await Promise.all([
+  const [animeEntries, mangaEntries, followerCount, followingCount, entryHistory] = await Promise.all([
     prisma.animeEntry.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
@@ -61,6 +62,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     prisma.mangaEntry.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
+    }),
+    prisma.follow.count({ where: { followingId: user.id } }),
+    prisma.follow.count({ where: { followerId: user.id } }),
+    prisma.entryHistory.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 15,
     }),
   ]);
 
@@ -143,6 +151,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const isLoggedIn = !!session?.user?.id;
   const isProfileOwner = session?.user?.id === user.id;
 
+  const isFollowing = isLoggedIn && !isProfileOwner
+    ? !!(await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: session!.user!.id!,
+            followingId: user.id,
+          },
+        },
+      }))
+    : false;
+
   const rawProfileComments = await prisma.profileComment.findMany({
     where: { profileId: user.id },
     orderBy: { createdAt: "asc" },
@@ -185,16 +204,36 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       {/* Profile Header */}
       <Card className="mb-8">
         <CardContent className="flex flex-col items-center gap-4 p-6 sm:flex-row sm:items-start">
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-            <UserIcon className="h-10 w-10 text-primary" />
-          </div>
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl font-bold">{user.name}</h1>
-            <p className="text-sm text-muted-foreground">@{user.username}</p>
+          {user.image ? (
+            <img
+              src={user.image}
+              alt={user.name}
+              className="h-20 w-20 flex-shrink-0 rounded-full object-cover border"
+            />
+          ) : (
+            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+              <UserIcon className="h-10 w-10 text-primary" />
+            </div>
+          )}
+          <div className="flex-1 text-center sm:text-left">
+            <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-bold">{user.name}</h1>
+                <p className="text-sm text-muted-foreground">@{user.username}</p>
+              </div>
+              {isLoggedIn && !isProfileOwner && (
+                <div className="flex items-center gap-2">
+                  <FollowButton targetUserId={user.id} initialFollowing={isFollowing} />
+                  <SendMessageButton recipientId={user.id} />
+                </div>
+              )}
+            </div>
             {user.bio && (
               <p className="mt-2 text-sm text-muted-foreground">{user.bio}</p>
             )}
             <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground sm:justify-start">
+              <span className="font-medium text-foreground">{followerCount} <span className="font-normal text-muted-foreground">followers</span></span>
+              <span className="font-medium text-foreground">{followingCount} <span className="font-normal text-muted-foreground">following</span></span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 Joined {formatDate(user.createdAt)}
@@ -208,11 +247,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 {mangaEntries.length} manga
               </span>
             </div>
-            {isLoggedIn && !isProfileOwner && (
-              <div className="mt-3">
-                <SendMessageButton recipientId={user.id} />
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -231,6 +265,19 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
       {/* Recent Activity */}
       <ProfileActivityTimeline entries={recentActivity} />
+
+      {/* History Log */}
+      <HistoryLog
+        entries={entryHistory.map((h) => ({
+          id: h.id,
+          entryType: h.entryType,
+          entryTitle: h.entryTitle,
+          field: h.field,
+          oldValue: h.oldValue,
+          newValue: h.newValue,
+          createdAt: h.createdAt.toISOString(),
+        }))}
+      />
 
       {/* Profile Comments */}
       <ProfileCommentSection

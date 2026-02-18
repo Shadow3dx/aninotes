@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
 
 const profileCommentSchema = z.object({
@@ -45,6 +46,18 @@ export async function addProfileComment(formData: FormData) {
       profileId: data.profileId,
       parentId: data.parentId ?? null,
     },
+  });
+
+  // Notify profile owner
+  const commenter = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true },
+  });
+  await createNotification({
+    userId: data.profileId,
+    type: "PROFILE_COMMENT",
+    relatedUserId: session.user.id,
+    body: `${commenter?.name ?? "Someone"} left a comment on your profile`,
   });
 
   revalidatePath(`/profile/${profileUser.username}`);

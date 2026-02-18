@@ -54,6 +54,20 @@ export async function updateAnimeEntry(id: string, formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   const data = animeEntrySchema.partial().parse(raw);
 
+  // Log history if episodesWatched changed
+  if (data.episodesWatched !== undefined && data.episodesWatched !== entry.episodesWatched) {
+    await prisma.entryHistory.create({
+      data: {
+        userId: session.user.id,
+        entryType: "ANIME",
+        entryTitle: entry.title,
+        field: "episodesWatched",
+        oldValue: entry.episodesWatched,
+        newValue: data.episodesWatched,
+      },
+    });
+  }
+
   await prisma.animeEntry.update({
     where: { id },
     data: {
@@ -126,6 +140,40 @@ export async function updateMangaEntry(id: string, formData: FormData) {
 
   const raw = Object.fromEntries(formData.entries());
   const data = mangaEntrySchema.partial().parse(raw);
+
+  // Log history if chaptersRead or volumesRead changed
+  const historyPromises: Promise<unknown>[] = [];
+  if (data.chaptersRead !== undefined && data.chaptersRead !== entry.chaptersRead) {
+    historyPromises.push(
+      prisma.entryHistory.create({
+        data: {
+          userId: session.user.id,
+          entryType: "MANGA",
+          entryTitle: entry.title,
+          field: "chaptersRead",
+          oldValue: entry.chaptersRead,
+          newValue: data.chaptersRead,
+        },
+      })
+    );
+  }
+  if (data.volumesRead !== undefined && data.volumesRead !== entry.volumesRead) {
+    historyPromises.push(
+      prisma.entryHistory.create({
+        data: {
+          userId: session.user.id,
+          entryType: "MANGA",
+          entryTitle: entry.title,
+          field: "volumesRead",
+          oldValue: entry.volumesRead,
+          newValue: data.volumesRead,
+        },
+      })
+    );
+  }
+  if (historyPromises.length > 0) {
+    await Promise.all(historyPromises);
+  }
 
   await prisma.mangaEntry.update({
     where: { id },
