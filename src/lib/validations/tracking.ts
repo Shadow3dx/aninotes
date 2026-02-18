@@ -35,17 +35,28 @@ export const mangaStatusLabels: Record<MangaStatus, string> = {
   PLAN_TO_READ: "Plan to Read",
 };
 
+// Preprocess empty strings to null so z.coerce.number() doesn't turn "" into 0
+const optionalNumber = z.preprocess(
+  (val) => (val === "" || val === undefined ? null : val),
+  z.coerce.number().nullable()
+);
+
+const optionalScore = z.preprocess(
+  (val) => (val === "" || val === undefined ? null : val),
+  z.coerce.number().int().min(1).max(10).nullable()
+);
+
 export const animeEntrySchema = z.object({
   malId: z.coerce.number().int().positive(),
   title: z.string().min(1),
   imageUrl: z.string().optional().default(""),
   synopsis: z.string().optional().default(""),
-  totalEpisodes: z.coerce.number().int().min(0).optional().nullable(),
+  totalEpisodes: optionalNumber.optional(),
   mediaType: z.string().optional().default(""),
   airingStatus: z.string().optional().default(""),
-  malScore: z.coerce.number().min(0).max(10).optional().nullable(),
+  malScore: optionalNumber.optional(),
   status: z.enum(animeStatusValues),
-  score: z.coerce.number().int().min(1).max(10).optional().nullable(),
+  score: optionalScore.optional(),
   episodesWatched: z.coerce.number().int().min(0).default(0),
   notes: z.string().max(2000).optional().default(""),
 });
@@ -55,13 +66,13 @@ export const mangaEntrySchema = z.object({
   title: z.string().min(1),
   imageUrl: z.string().optional().default(""),
   synopsis: z.string().optional().default(""),
-  totalChapters: z.coerce.number().int().min(0).optional().nullable(),
-  totalVolumes: z.coerce.number().int().min(0).optional().nullable(),
+  totalChapters: optionalNumber.optional(),
+  totalVolumes: optionalNumber.optional(),
   mediaType: z.string().optional().default(""),
   publishingStatus: z.string().optional().default(""),
-  malScore: z.coerce.number().min(0).max(10).optional().nullable(),
+  malScore: optionalNumber.optional(),
   status: z.enum(mangaStatusValues),
-  score: z.coerce.number().int().min(1).max(10).optional().nullable(),
+  score: optionalScore.optional(),
   chaptersRead: z.coerce.number().int().min(0).default(0),
   volumesRead: z.coerce.number().int().min(0).default(0),
   notes: z.string().max(2000).optional().default(""),
