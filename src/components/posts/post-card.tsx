@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Calendar, Clock } from "lucide-react";
 import { fadeIn, cardHover, cardTap } from "@/lib/motion";
 import { formatDate, readingTime } from "@/lib/utils";
-import { AnimeMetadata } from "./anime-metadata";
+import { ReviewMetadata } from "./review-metadata";
 import { TagPill } from "@/components/tags/tag-pill";
 import type { PostWithRelations } from "@/types";
 
@@ -42,11 +42,14 @@ export function PostCard({ post }: PostCardProps) {
           )}
 
           <div className="p-5">
-            {/* Anime metadata */}
-            <AnimeMetadata
+            {/* Review metadata */}
+            <ReviewMetadata
+              reviewType={post.reviewType}
               animeTitle={post.animeTitle}
               episodeNumber={post.episodeNumber}
               season={post.season}
+              mangaTitle={post.mangaTitle}
+              chapterNumber={post.chapterNumber}
               rating={post.rating}
             />
 

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, Tv, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,11 +42,16 @@ export function PostEditor({ post, allTags, allCategories }: PostEditorProps) {
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [content, setContent] = useState(post?.contentMarkdown ?? "");
   const [coverImage, setCoverImage] = useState(post?.coverImage ?? "");
+  const [reviewType, setReviewType] = useState(post?.reviewType ?? "ANIME");
   const [animeTitle, setAnimeTitle] = useState(post?.animeTitle ?? "");
   const [episodeNumber, setEpisodeNumber] = useState(
     post?.episodeNumber?.toString() ?? "1"
   );
   const [season, setSeason] = useState(post?.season ?? "");
+  const [mangaTitle, setMangaTitle] = useState(post?.mangaTitle ?? "");
+  const [chapterNumber, setChapterNumber] = useState(
+    post?.chapterNumber?.toString() ?? "1"
+  );
   const [rating, setRating] = useState(post?.rating?.toString() ?? "7");
   const [status, setStatus] = useState(post?.status ?? "DRAFT");
   const [selectedTags, setSelectedTags] = useState<string[]>(
@@ -89,9 +94,12 @@ export function PostEditor({ post, allTags, allCategories }: PostEditorProps) {
       formData.set("excerpt", excerpt);
       formData.set("contentMarkdown", content);
       formData.set("coverImage", coverImage);
+      formData.set("reviewType", reviewType);
       formData.set("animeTitle", animeTitle);
       formData.set("episodeNumber", episodeNumber);
       formData.set("season", season);
+      formData.set("mangaTitle", mangaTitle);
+      formData.set("chapterNumber", chapterNumber);
       formData.set("rating", rating);
       formData.set("status", status);
       for (const tagId of selectedTags) {
@@ -170,73 +178,158 @@ export function PostEditor({ post, allTags, allCategories }: PostEditorProps) {
         </div>
       </div>
 
-      {/* Anime Fields */}
+      {/* Review Type + Details */}
       <div className="rounded-lg border border-border/50 p-4">
-        <h3 className="mb-4 text-sm font-semibold text-primary">
-          Anime Details
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-2">
-            <Label htmlFor="animeTitle">Anime Title</Label>
-            <Input
-              id="animeTitle"
-              value={animeTitle}
-              onChange={(e) => {
-                setAnimeTitle(e.target.value);
+        <div className="mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-primary">Review Type</h3>
+          <div className="flex rounded-md border">
+            <button
+              type="button"
+              onClick={() => {
+                setReviewType("ANIME");
                 markDirty();
               }}
-              placeholder="e.g. Attack on Titan"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="season">Season</Label>
-            <Input
-              id="season"
-              value={season}
-              onChange={(e) => {
-                setSeason(e.target.value);
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                reviewType === "ANIME"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              } rounded-l-md`}
+            >
+              <Tv className="h-3.5 w-3.5" />
+              Anime
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setReviewType("MANGA");
                 markDirty();
               }}
-              placeholder="e.g. Season 4 Part 2"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="episodeNumber">Episode #</Label>
-            <Input
-              id="episodeNumber"
-              type="number"
-              min="0"
-              value={episodeNumber}
-              onChange={(e) => {
-                setEpisodeNumber(e.target.value);
-                markDirty();
-              }}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rating">Rating (1-10)</Label>
-            <div className="flex items-center gap-3">
-              <input
-                id="rating"
-                type="range"
-                min="1"
-                max="10"
-                value={rating}
-                onChange={(e) => {
-                  setRating(e.target.value);
-                  markDirty();
-                }}
-                className="flex-1 accent-primary"
-              />
-              <span className="w-8 text-center text-lg font-bold text-primary">
-                {rating}
-              </span>
-            </div>
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                reviewType === "MANGA"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              } rounded-r-md`}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Manga
+            </button>
           </div>
         </div>
+
+        {reviewType === "ANIME" ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label htmlFor="animeTitle">Anime Title</Label>
+              <Input
+                id="animeTitle"
+                value={animeTitle}
+                onChange={(e) => {
+                  setAnimeTitle(e.target.value);
+                  markDirty();
+                }}
+                placeholder="e.g. Attack on Titan"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="season">Season</Label>
+              <Input
+                id="season"
+                value={season}
+                onChange={(e) => {
+                  setSeason(e.target.value);
+                  markDirty();
+                }}
+                placeholder="e.g. Season 4 Part 2"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="episodeNumber">Episode #</Label>
+              <Input
+                id="episodeNumber"
+                type="number"
+                min="0"
+                value={episodeNumber}
+                onChange={(e) => {
+                  setEpisodeNumber(e.target.value);
+                  markDirty();
+                }}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rating">Rating (1-10)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="rating"
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={rating}
+                  onChange={(e) => {
+                    setRating(e.target.value);
+                    markDirty();
+                  }}
+                  className="flex-1 accent-primary"
+                />
+                <span className="w-8 text-center text-lg font-bold text-primary">
+                  {rating}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="mangaTitle">Manga Title</Label>
+              <Input
+                id="mangaTitle"
+                value={mangaTitle}
+                onChange={(e) => {
+                  setMangaTitle(e.target.value);
+                  markDirty();
+                }}
+                placeholder="e.g. One Piece"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="chapterNumber">Chapter #</Label>
+              <Input
+                id="chapterNumber"
+                type="number"
+                min="0"
+                value={chapterNumber}
+                onChange={(e) => {
+                  setChapterNumber(e.target.value);
+                  markDirty();
+                }}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rating">Rating (1-10)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="rating"
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={rating}
+                  onChange={(e) => {
+                    setRating(e.target.value);
+                    markDirty();
+                  }}
+                  className="flex-1 accent-primary"
+                />
+                <span className="w-8 text-center text-lg font-bold text-primary">
+                  {rating}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Excerpt + Cover Image */}

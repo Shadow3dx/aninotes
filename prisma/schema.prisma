@@ -37,10 +37,19 @@ model Post {
   contentMarkdown String
   coverImage      String?
 
+  // Review type
+  reviewType    String    @default("ANIME")
+
   // Anime-specific fields
-  animeTitle    String
-  episodeNumber Int
-  season        String
+  animeTitle    String?
+  episodeNumber Int?
+  season        String?
+
+  // Manga-specific fields
+  mangaTitle    String?
+  chapterNumber Int?
+
+  // Shared
   rating        Int
 
   status      String    @default("DRAFT")
@@ -60,6 +69,7 @@ model Post {
   @@index([status])
   @@index([publishedAt])
   @@index([animeTitle])
+  @@index([reviewType])
 }
 
 model Comment {

@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Calendar, Clock } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
 import { formatDate, readingTime } from "@/lib/utils";
-import { AnimeMetadata } from "./anime-metadata";
+import { ReviewMetadata } from "./review-metadata";
 import { TagPill } from "@/components/tags/tag-pill";
 import type { PostWithRelations } from "@/types";
 
@@ -50,10 +50,13 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
                 Featured Review
               </span>
 
-              <AnimeMetadata
+              <ReviewMetadata
+                reviewType={post.reviewType}
                 animeTitle={post.animeTitle}
                 episodeNumber={post.episodeNumber}
                 season={post.season}
+                mangaTitle={post.mangaTitle}
+                chapterNumber={post.chapterNumber}
                 rating={post.rating}
                 size="md"
               />

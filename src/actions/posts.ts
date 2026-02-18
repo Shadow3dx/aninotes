@@ -21,6 +21,8 @@ export async function createPost(formData: FormData) {
     categoryIds,
   });
 
+  const isAnime = data.reviewType === "ANIME";
+
   const post = await prisma.post.create({
     data: {
       title: data.title,
@@ -28,9 +30,12 @@ export async function createPost(formData: FormData) {
       excerpt: data.excerpt || null,
       contentMarkdown: data.contentMarkdown,
       coverImage: data.coverImage || null,
-      animeTitle: data.animeTitle,
-      episodeNumber: data.episodeNumber,
-      season: data.season,
+      reviewType: data.reviewType,
+      animeTitle: isAnime ? data.animeTitle || null : null,
+      episodeNumber: isAnime ? data.episodeNumber ?? null : null,
+      season: isAnime ? data.season || null : null,
+      mangaTitle: !isAnime ? data.mangaTitle || null : null,
+      chapterNumber: !isAnime ? data.chapterNumber ?? null : null,
       rating: data.rating,
       status: data.status,
       publishAt: data.publishAt ? new Date(data.publishAt) : null,
@@ -67,6 +72,8 @@ export async function updatePost(id: string, formData: FormData) {
   // Get old post to check if status changed
   const oldPost = await prisma.post.findUnique({ where: { id } });
 
+  const isAnime = data.reviewType === "ANIME";
+
   await prisma.post.update({
     where: { id },
     data: {
@@ -75,9 +82,12 @@ export async function updatePost(id: string, formData: FormData) {
       excerpt: data.excerpt || null,
       contentMarkdown: data.contentMarkdown,
       coverImage: data.coverImage || null,
-      animeTitle: data.animeTitle,
-      episodeNumber: data.episodeNumber,
-      season: data.season,
+      reviewType: data.reviewType,
+      animeTitle: isAnime ? data.animeTitle || null : null,
+      episodeNumber: isAnime ? data.episodeNumber ?? null : null,
+      season: isAnime ? data.season || null : null,
+      mangaTitle: !isAnime ? data.mangaTitle || null : null,
+      chapterNumber: !isAnime ? data.chapterNumber ?? null : null,
       rating: data.rating,
       status: data.status,
       publishAt: data.publishAt ? new Date(data.publishAt) : null,

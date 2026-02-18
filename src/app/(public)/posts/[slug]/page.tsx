@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { Container } from "@/components/layout/container";
 import { PostContent } from "@/components/posts/post-content";
 import { TableOfContents } from "@/components/posts/table-of-contents";
-import { AnimeMetadata } from "@/components/posts/anime-metadata";
+import { ReviewMetadata } from "@/components/posts/review-metadata";
 import { ShareButton } from "@/components/posts/share-button";
 import { RelatedPosts } from "@/components/posts/related-posts";
 import { CommentSection } from "@/components/comments/comment-section";
@@ -43,7 +43,11 @@ export async function generateMetadata({
 
   return {
     title: post.title,
-    description: post.excerpt ?? `Review of ${post.animeTitle} ${post.season} Episode ${post.episodeNumber}`,
+    description: post.excerpt ?? (
+      post.reviewType === "MANGA"
+        ? `Review of ${post.mangaTitle} Chapter ${post.chapterNumber}`
+        : `Review of ${post.animeTitle} ${post.season} Episode ${post.episodeNumber}`
+    ),
     openGraph: {
       title: post.title,
       description: post.excerpt ?? undefined,
@@ -132,11 +136,14 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_220px]">
           {/* Main content */}
           <article>
-            {/* Anime metadata */}
-            <AnimeMetadata
+            {/* Review metadata */}
+            <ReviewMetadata
+              reviewType={post.reviewType}
               animeTitle={post.animeTitle}
               episodeNumber={post.episodeNumber}
               season={post.season}
+              mangaTitle={post.mangaTitle}
+              chapterNumber={post.chapterNumber}
               rating={post.rating}
               size="md"
             />
