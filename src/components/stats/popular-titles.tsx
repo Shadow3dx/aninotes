@@ -1,10 +1,16 @@
+"use client";
+
+import { useState } from "react";
 import { Film, BookOpen, Users } from "lucide-react";
+import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntryDetailDialog } from "@/components/tracking/entry-detail-dialog";
 
 interface PopularTitle {
   title: string;
   imageUrl: string | null;
   count: number;
+  entry: AnimeEntry | MangaEntry | null;
 }
 
 interface PopularTitlesProps {
@@ -14,6 +20,8 @@ interface PopularTitlesProps {
 }
 
 export function PopularTitles({ title, mediaType, entries }: PopularTitlesProps) {
+  const [selectedEntry, setSelectedEntry] = useState<AnimeEntry | MangaEntry | null>(null);
+
   if (entries.length === 0) return null;
 
   return (
@@ -31,10 +39,19 @@ export function PopularTitles({ title, mediaType, entries }: PopularTitlesProps)
       <CardContent>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
           {entries.map((entry, i) => (
-            <div key={`${entry.title}-${i}`} className="overflow-hidden rounded-lg border border-border/30">
+            <button
+              key={`${entry.title}-${i}`}
+              type="button"
+              className="overflow-hidden rounded-lg border border-border/30 text-left transition-shadow hover:shadow-md cursor-pointer"
+              onClick={() => entry.entry && setSelectedEntry(entry.entry)}
+            >
               {entry.imageUrl ? (
                 <div className="aspect-[3/4] overflow-hidden">
-                  <img src={entry.imageUrl} alt={entry.title} className="h-full w-full object-cover" />
+                  <img
+                    src={entry.imageUrl}
+                    alt={entry.title}
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
                 </div>
               ) : (
                 <div className="flex aspect-[3/4] items-center justify-center bg-muted">
@@ -52,10 +69,19 @@ export function PopularTitles({ title, mediaType, entries }: PopularTitlesProps)
                   {entry.count} users
                 </p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </CardContent>
+
+      <EntryDetailDialog
+        entry={selectedEntry}
+        type={mediaType}
+        open={!!selectedEntry}
+        onOpenChange={(open) => {
+          if (!open) setSelectedEntry(null);
+        }}
+      />
     </Card>
   );
 }

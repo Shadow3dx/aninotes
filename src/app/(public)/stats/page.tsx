@@ -33,10 +33,18 @@ export default async function StatsPage() {
     orderBy: { _count: { malId: "desc" } },
     take: 10,
   });
+  // Fetch a full representative entry for each popular anime
+  const popularAnimeMalIds = popularAnimeRaw.map((e) => e.malId);
+  const popularAnimeEntries = await prisma.animeEntry.findMany({
+    where: { malId: { in: popularAnimeMalIds } },
+    distinct: ["malId"],
+  });
+  const animeEntryMap = new Map(popularAnimeEntries.map((e) => [e.malId, e]));
   const popularAnime = popularAnimeRaw.map((e) => ({
     title: e.title,
     imageUrl: e.imageUrl,
     count: e._count,
+    entry: animeEntryMap.get(e.malId) ?? null,
   }));
 
   // Popular manga (most tracked)
@@ -46,10 +54,18 @@ export default async function StatsPage() {
     orderBy: { _count: { malId: "desc" } },
     take: 10,
   });
+  // Fetch a full representative entry for each popular manga
+  const popularMangaMalIds = popularMangaRaw.map((e) => e.malId);
+  const popularMangaEntries = await prisma.mangaEntry.findMany({
+    where: { malId: { in: popularMangaMalIds } },
+    distinct: ["malId"],
+  });
+  const mangaEntryMap = new Map(popularMangaEntries.map((e) => [e.malId, e]));
   const popularManga = popularMangaRaw.map((e) => ({
     title: e.title,
     imageUrl: e.imageUrl,
     count: e._count,
+    entry: mangaEntryMap.get(e.malId) ?? null,
   }));
 
   // Leaderboard: most entries
@@ -152,8 +168,8 @@ export default async function StatsPage() {
 
         {/* Popular Titles */}
         <div className="grid gap-6 lg:grid-cols-2">
-          <PopularTitles title="Most Popular Anime" mediaType="anime" entries={popularAnime} />
-          <PopularTitles title="Most Popular Manga" mediaType="manga" entries={popularManga} />
+          <PopularTitles title="Most Popular Anime" mediaType="anime" entries={JSON.parse(JSON.stringify(popularAnime))} />
+          <PopularTitles title="Most Popular Manga" mediaType="manga" entries={JSON.parse(JSON.stringify(popularManga))} />
         </div>
 
         {/* Leaderboards */}
