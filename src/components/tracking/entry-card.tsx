@@ -23,6 +23,7 @@ import {
 import { StatusBadge } from "./status-badge";
 import { ProgressBar } from "./progress-bar";
 import { EntryEditDialog } from "./entry-edit-dialog";
+import { EntryDetailDialog } from "./entry-detail-dialog";
 import { deleteAnimeEntry, deleteMangaEntry, toggleAnimeFavorite, toggleMangaFavorite } from "@/actions/tracking";
 import { fadeIn } from "@/lib/motion";
 
@@ -33,6 +34,7 @@ interface EntryCardProps {
 
 export function EntryCard({ entry, type }: EntryCardProps) {
   const [editOpen, setEditOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [favoriting, setFavoriting] = useState(false);
 
@@ -81,7 +83,11 @@ export function EntryCard({ entry, type }: EntryCardProps) {
         <Card className="overflow-hidden transition-shadow hover:shadow-md">
           <div className="flex gap-3 p-3">
             {/* Cover image */}
-            <div className="relative h-[120px] w-[85px] flex-shrink-0 overflow-hidden rounded-md bg-muted">
+            <button
+              type="button"
+              onClick={() => setDetailOpen(true)}
+              className="relative h-[120px] w-[85px] flex-shrink-0 overflow-hidden rounded-md bg-muted cursor-pointer"
+            >
               {entry.imageUrl ? (
                 <Image
                   src={entry.imageUrl}
@@ -95,14 +101,18 @@ export function EntryCard({ entry, type }: EntryCardProps) {
                   No Image
                 </div>
               )}
-            </div>
+            </button>
 
             {/* Info */}
             <div className="flex min-w-0 flex-1 flex-col justify-between">
               <div>
-                <h3 className="line-clamp-2 text-sm font-semibold leading-tight">
+                <button
+                  type="button"
+                  onClick={() => setDetailOpen(true)}
+                  className="line-clamp-2 text-sm font-semibold leading-tight text-left hover:text-primary transition-colors cursor-pointer"
+                >
                   {entry.title}
-                </h3>
+                </button>
                 <div className="mt-1 flex items-center gap-2">
                   <StatusBadge status={entry.status} />
                   {entry.score && (
@@ -173,6 +183,12 @@ export function EntryCard({ entry, type }: EntryCardProps) {
         type={type}
         open={editOpen}
         onOpenChange={setEditOpen}
+      />
+      <EntryDetailDialog
+        entry={entry}
+        type={type}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
       />
     </>
   );

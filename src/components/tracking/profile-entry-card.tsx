@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
@@ -7,6 +8,7 @@ import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "./status-badge";
 import { ProgressBar } from "./progress-bar";
+import { EntryDetailDialog } from "./entry-detail-dialog";
 import { fadeIn } from "@/lib/motion";
 
 interface ProfileEntryCardProps {
@@ -15,6 +17,7 @@ interface ProfileEntryCardProps {
 }
 
 export function ProfileEntryCard({ entry, type }: ProfileEntryCardProps) {
+  const [detailOpen, setDetailOpen] = useState(false);
   const isAnime = type === "anime";
   const animeEntry = entry as AnimeEntry;
   const mangaEntry = entry as MangaEntry;
@@ -23,45 +26,57 @@ export function ProfileEntryCard({ entry, type }: ProfileEntryCardProps) {
   const total = isAnime ? animeEntry.totalEpisodes : mangaEntry.totalChapters;
 
   return (
-    <motion.div variants={fadeIn}>
-      <Card className="overflow-hidden transition-shadow hover:shadow-md">
-        <div className="flex gap-3 p-3">
-          <div className="relative h-[100px] w-[70px] flex-shrink-0 overflow-hidden rounded-md bg-muted">
-            {entry.imageUrl ? (
-              <Image
-                src={entry.imageUrl}
-                alt={entry.title}
-                fill
-                className="object-cover"
-                sizes="70px"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                No Image
-              </div>
-            )}
-          </div>
-
-          <div className="flex min-w-0 flex-1 flex-col justify-between">
-            <div>
-              <h3 className="line-clamp-2 text-sm font-semibold leading-tight">
-                {entry.title}
-              </h3>
-              <div className="mt-1 flex items-center gap-2">
-                <StatusBadge status={entry.status} />
-                {entry.score && (
-                  <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                    <Star className="h-3 w-3 fill-primary text-primary" />
-                    {entry.score}/10
-                  </span>
-                )}
-              </div>
+    <>
+      <motion.div variants={fadeIn}>
+        <Card
+          className="overflow-hidden transition-shadow hover:shadow-md cursor-pointer"
+          onClick={() => setDetailOpen(true)}
+        >
+          <div className="flex gap-3 p-3">
+            <div className="relative h-[100px] w-[70px] flex-shrink-0 overflow-hidden rounded-md bg-muted">
+              {entry.imageUrl ? (
+                <Image
+                  src={entry.imageUrl}
+                  alt={entry.title}
+                  fill
+                  className="object-cover"
+                  sizes="70px"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                  No Image
+                </div>
+              )}
             </div>
 
-            <ProgressBar current={current} total={total} className="mt-2" />
+            <div className="flex min-w-0 flex-1 flex-col justify-between">
+              <div>
+                <h3 className="line-clamp-2 text-sm font-semibold leading-tight hover:text-primary transition-colors">
+                  {entry.title}
+                </h3>
+                <div className="mt-1 flex items-center gap-2">
+                  <StatusBadge status={entry.status} />
+                  {entry.score && (
+                    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                      <Star className="h-3 w-3 fill-primary text-primary" />
+                      {entry.score}/10
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <ProgressBar current={current} total={total} className="mt-2" />
+            </div>
           </div>
-        </div>
-      </Card>
-    </motion.div>
+        </Card>
+      </motion.div>
+
+      <EntryDetailDialog
+        entry={entry}
+        type={type}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
+    </>
   );
 }

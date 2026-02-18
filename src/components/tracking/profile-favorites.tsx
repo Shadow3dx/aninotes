@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Heart, Star, Film, BookOpen } from "lucide-react";
 import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { staggerContainer, fadeIn } from "@/lib/motion";
+import { EntryDetailDialog } from "./entry-detail-dialog";
 
 interface FavoriteItem {
   entry: AnimeEntry | MangaEntry;
@@ -16,6 +18,8 @@ interface ProfileFavoritesProps {
 }
 
 export function ProfileFavorites({ items }: ProfileFavoritesProps) {
+  const [selectedEntry, setSelectedEntry] = useState<FavoriteItem | null>(null);
+
   if (items.length === 0) return null;
 
   return (
@@ -34,7 +38,8 @@ export function ProfileFavorites({ items }: ProfileFavoritesProps) {
           <motion.div
             key={entry.id}
             variants={fadeIn}
-            className="group relative overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm transition-shadow hover:shadow-md"
+            className="group relative cursor-pointer overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm transition-shadow hover:shadow-md"
+            onClick={() => setSelectedEntry({ entry, mediaKind })}
           >
             <div className="relative aspect-[2/3] w-full bg-muted">
               {entry.imageUrl ? (
@@ -78,6 +83,15 @@ export function ProfileFavorites({ items }: ProfileFavoritesProps) {
           </motion.div>
         ))}
       </motion.div>
+
+      <EntryDetailDialog
+        entry={selectedEntry?.entry ?? null}
+        type={selectedEntry?.mediaKind ?? "anime"}
+        open={!!selectedEntry}
+        onOpenChange={(open) => {
+          if (!open) setSelectedEntry(null);
+        }}
+      />
     </div>
   );
 }
