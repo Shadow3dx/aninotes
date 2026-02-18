@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Trash2, User } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CommentForm } from "./comment-form";
@@ -13,6 +14,7 @@ export interface CommentData {
   id: string;
   body: string;
   authorName: string;
+  authorImage?: string | null;
   username?: string | null;
   createdAt: string;
   replies: CommentData[];
@@ -54,9 +56,7 @@ export function CommentItem({
     <div className={depth > 0 ? "ml-6 border-l-2 border-border/50 pl-4" : ""}>
       <div className="group rounded-lg bg-muted/30 p-4">
         <div className="mb-2 flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-3.5 w-3.5 text-primary" />
-          </div>
+          <UserAvatar name={comment.authorName} image={comment.authorImage} size="sm" />
           {comment.username ? (
             <Link
               href={`/profile/${comment.username}`}

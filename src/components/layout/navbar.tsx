@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { UnreadBadge } from "./unread-badge";
 import { NotificationBadge } from "./notification-badge";
@@ -36,12 +36,7 @@ export function Navbar() {
   const role = session?.user?.role;
   const [open, setOpen] = useState(false);
 
-  const initials = session?.user?.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
@@ -109,14 +104,7 @@ export function Navbar() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="hidden md:inline-flex">
                   <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      {session.user.image && (
-                        <AvatarImage src={session.user.image} alt={session.user.name ?? ""} />
-                      )}
-                      <AvatarFallback className="text-xs">
-                        {initials || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar name={session.user.name ?? ""} image={session.user.image} size="sm" className="h-8 w-8" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">

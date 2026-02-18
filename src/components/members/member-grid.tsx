@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { User as UserIcon, Film, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { staggerContainer, fadeIn } from "@/lib/motion";
 import { formatDate } from "@/lib/utils";
 
@@ -47,27 +47,12 @@ export function MemberGrid({ users, query }: MemberGridProps) {
       animate="visible"
       className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
-      {users.map((user) => {
-        const initials = user.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2);
-
-        return (
+      {users.map((user) => (
           <motion.div key={user.id} variants={fadeIn}>
             <Link href={`/profile/${user.username}`}>
               <Card className="transition-colors hover:border-primary/30 hover:shadow-sm">
                 <CardContent className="flex items-start gap-3 p-4">
-                  <Avatar className="h-12 w-12 flex-shrink-0">
-                    {user.image && (
-                      <AvatarImage src={user.image} alt={user.name} />
-                    )}
-                    <AvatarFallback className="text-sm">
-                      {initials || <UserIcon className="h-5 w-5" />}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar name={user.name} image={user.image} size="md" className="flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{user.name}</p>
                     <p className="text-xs text-muted-foreground">
@@ -94,8 +79,7 @@ export function MemberGrid({ users, query }: MemberGridProps) {
               </Card>
             </Link>
           </motion.div>
-        );
-      })}
+      ))}
     </motion.div>
   );
 }

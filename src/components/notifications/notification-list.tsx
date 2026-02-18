@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Bell, Check, CheckCheck, Trash2, User as UserIcon } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { markNotificationsRead, markAllNotificationsRead, deleteNotification } from "@/actions/notifications";
@@ -128,17 +129,12 @@ export function NotificationList() {
               )}
             >
               <CardContent className="flex items-start gap-3 p-4">
-                {n.relatedUser?.image ? (
-                  <img
-                    src={n.relatedUser.image}
-                    alt=""
-                    className="h-8 w-8 rounded-full object-cover border flex-shrink-0"
-                  />
-                ) : (
-                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted">
-                    <UserIcon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                )}
+                <UserAvatar
+                  name={n.relatedUser?.name ?? "User"}
+                  image={n.relatedUser?.image}
+                  size="sm"
+                  className="flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{n.body}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">

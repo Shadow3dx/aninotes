@@ -165,7 +165,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const rawProfileComments = await prisma.profileComment.findMany({
     where: { profileId: user.id },
     orderBy: { createdAt: "asc" },
-    include: { user: { select: { name: true, username: true } } },
+    include: { user: { select: { name: true, username: true, image: true } } },
   });
 
   // Build comment tree
@@ -186,6 +186,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         id: c.id,
         body: c.body,
         userName: c.user.name,
+        userImage: c.user.image,
         username: c.user.username,
         createdAt: c.createdAt.toISOString(),
         isAuthor: c.userId === session?.user?.id,

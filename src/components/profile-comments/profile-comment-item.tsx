@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Trash2, User } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,7 @@ export interface ProfileCommentData {
   id: string;
   body: string;
   userName: string;
+  userImage?: string | null;
   username: string;
   createdAt: string;
   isAuthor: boolean;
@@ -66,9 +68,7 @@ export function ProfileCommentItem({
     <div className={depth > 0 ? "ml-6 border-l-2 border-border/50 pl-4" : ""}>
       <div className="group py-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-3.5 w-3.5 text-primary" />
-          </div>
+          <UserAvatar name={comment.userName} image={comment.userImage} size="sm" />
           <Link
             href={`/profile/${comment.username}`}
             className="text-sm font-medium hover:text-primary transition-colors"

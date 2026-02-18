@@ -8,6 +8,7 @@ import { fadeInUp } from "@/lib/motion";
 import { formatDate, readingTime } from "@/lib/utils";
 import { ReviewMetadata } from "./review-metadata";
 import { TagPill } from "@/components/tags/tag-pill";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import type { PostWithRelations } from "@/types";
 
 interface FeaturedPostProps {
@@ -85,7 +86,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
                 <span
                   role="link"
                   tabIndex={0}
-                  className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -99,6 +100,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
                     }
                   }}
                 >
+                  <UserAvatar name={post.author.name} image={post.author.image} size="sm" />
                   {post.author.name}
                 </span>
                 <span className="flex items-center gap-1">

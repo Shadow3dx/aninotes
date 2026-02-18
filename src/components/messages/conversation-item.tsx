@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { User } from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface ConversationItemProps {
   conversationId: string;
@@ -30,9 +30,7 @@ export function ConversationItem({
         unreadCount > 0 && "bg-primary/5 border-primary/20"
       )}
     >
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <User className="h-5 w-5 text-primary" />
-      </div>
+      <UserAvatar name={otherUser.name} image={otherUser.image} size="md" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between">
           <span className={cn("text-sm font-medium", unreadCount > 0 && "font-semibold")}>

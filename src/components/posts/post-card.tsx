@@ -8,6 +8,7 @@ import { fadeIn, cardHover, cardTap } from "@/lib/motion";
 import { formatDate, readingTime } from "@/lib/utils";
 import { ReviewMetadata } from "./review-metadata";
 import { TagPill } from "@/components/tags/tag-pill";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import type { PostWithRelations } from "@/types";
 
 interface PostCardProps {
@@ -84,7 +85,7 @@ export function PostCard({ post }: PostCardProps) {
               <span
                 role="link"
                 tabIndex={0}
-                className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -98,6 +99,7 @@ export function PostCard({ post }: PostCardProps) {
                   }
                 }}
               >
+                <UserAvatar name={post.author.name} image={post.author.image} size="xs" />
                 {post.author.name}
               </span>
               <span className="flex items-center gap-1">

@@ -19,6 +19,7 @@ import { CategoryBadge } from "@/components/tags/category-badge";
 import { Button } from "@/components/ui/button";
 import { extractHeadings } from "@/lib/markdown";
 import { formatDate, readingTime } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import type { CommentData } from "@/components/comments/comment-item";
 
 interface PostPageProps {
@@ -80,7 +81,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const rawComments = await prisma.comment.findMany({
     where: { postId: post.id },
     orderBy: { createdAt: "asc" },
-    include: { user: { select: { username: true } } },
+    include: { user: { select: { username: true, image: true } } },
   });
 
   // Build tree structure
@@ -91,6 +92,7 @@ export default async function PostPage({ params }: PostPageProps) {
         id: c.id,
         body: c.body,
         authorName: c.authorName,
+        authorImage: c.user?.image ?? null,
         username: c.user?.username ?? null,
         createdAt: c.createdAt.toISOString(),
         replies: buildTree(c.id),
@@ -163,8 +165,9 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <Link
                 href={`/profile/${post.author.username}`}
-                className="font-medium text-foreground hover:text-primary transition-colors"
+                className="flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors"
               >
+                <UserAvatar name={post.author.name} image={post.author.image} size="sm" />
                 {post.author.name}
               </Link>
               <span className="flex items-center gap-1">

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Trophy, User as UserIcon } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface LeaderboardEntry {
   username: string;
@@ -37,17 +38,7 @@ export function LeaderboardTable({ title, entries, valueLabel }: LeaderboardTabl
               <span className="w-6 text-center text-sm font-bold text-muted-foreground">
                 {i + 1}
               </span>
-              {entry.image ? (
-                <img
-                  src={entry.image}
-                  alt=""
-                  className="h-8 w-8 rounded-full object-cover border"
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                  <UserIcon className="h-4 w-4 text-muted-foreground" />
-                </div>
-              )}
+              <UserAvatar name={entry.name} image={entry.image} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="truncate text-sm font-medium">{entry.name}</p>
                 <p className="text-xs text-muted-foreground">@{entry.username}</p>
