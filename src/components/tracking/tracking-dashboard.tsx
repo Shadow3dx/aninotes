@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -29,11 +30,16 @@ interface TrackingDashboardProps {
 function computeFilteredEntries<T extends { status: string; title: string; score: number | null; updatedAt: Date }>(
   entries: T[],
   statusFilter: string,
-  sort: string
+  sort: string,
+  search: string
 ) {
   let filtered = entries;
   if (statusFilter !== "all") {
     filtered = filtered.filter((e) => e.status === statusFilter);
+  }
+  if (search.trim()) {
+    const q = search.trim().toLowerCase();
+    filtered = filtered.filter((e) => e.title.toLowerCase().includes(q));
   }
 
   return [...filtered].sort((a, b) => {
@@ -59,15 +65,17 @@ export function TrackingDashboard({
   const [mangaStatusFilter, setMangaStatusFilter] = useState("all");
   const [animeSort, setAnimeSort] = useState("updated");
   const [mangaSort, setMangaSort] = useState("updated");
+  const [animeSearch, setAnimeSearch] = useState("");
+  const [mangaSearch, setMangaSearch] = useState("");
 
   const filteredAnime = useMemo(
-    () => computeFilteredEntries(animeEntries, animeStatusFilter, animeSort),
-    [animeEntries, animeStatusFilter, animeSort]
+    () => computeFilteredEntries(animeEntries, animeStatusFilter, animeSort, animeSearch),
+    [animeEntries, animeStatusFilter, animeSort, animeSearch]
   );
 
   const filteredManga = useMemo(
-    () => computeFilteredEntries(mangaEntries, mangaStatusFilter, mangaSort),
-    [mangaEntries, mangaStatusFilter, mangaSort]
+    () => computeFilteredEntries(mangaEntries, mangaStatusFilter, mangaSort, mangaSearch),
+    [mangaEntries, mangaStatusFilter, mangaSort, mangaSearch]
   );
 
   const animeStatuses = [
@@ -119,7 +127,16 @@ export function TrackingDashboard({
         <TabsContent value="anime" className="space-y-6">
           <TrackingStatsBar stats={animeStats} type="anime" />
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={animeSearch}
+                onChange={(e) => setAnimeSearch(e.target.value)}
+                placeholder="Search your anime list..."
+                className="pl-9"
+              />
+            </div>
             <Select
               value={animeStatusFilter}
               onValueChange={setAnimeStatusFilter}
@@ -167,6 +184,8 @@ export function TrackingDashboard({
               <p className="text-muted-foreground">
                 {animeEntries.length === 0
                   ? "Your anime list is empty. Search and add some!"
+                  : animeSearch.trim()
+                  ? `No anime matching "${animeSearch}".`
                   : "No anime match this filter."}
               </p>
               {animeEntries.length === 0 && (
@@ -183,7 +202,16 @@ export function TrackingDashboard({
         <TabsContent value="manga" className="space-y-6">
           <TrackingStatsBar stats={mangaStats} type="manga" />
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={mangaSearch}
+                onChange={(e) => setMangaSearch(e.target.value)}
+                placeholder="Search your manga list..."
+                className="pl-9"
+              />
+            </div>
             <Select
               value={mangaStatusFilter}
               onValueChange={setMangaStatusFilter}
@@ -231,6 +259,8 @@ export function TrackingDashboard({
               <p className="text-muted-foreground">
                 {mangaEntries.length === 0
                   ? "Your manga list is empty. Search and add some!"
+                  : mangaSearch.trim()
+                  ? `No manga matching "${mangaSearch}".`
                   : "No manga match this filter."}
               </p>
               {mangaEntries.length === 0 && (

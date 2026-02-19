@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container";
 import { TrackingDashboard } from "@/components/tracking/tracking-dashboard";
 import { HistoryLog } from "@/components/tracking/history-log";
 import { RecommendationsSection } from "@/components/tracking/recommendations-section";
+import { ProfileStatsOverview } from "@/components/tracking/profile-stats-overview";
 import { getRecommendations } from "@/lib/recommendations";
 import type { TrackingStats } from "@/types";
 
@@ -70,8 +71,27 @@ export default async function MyListPage() {
 
   const recommendations = await getRecommendations(session.user.id);
 
+  const totalEpisodesWatched = animeStats.totalProgress;
+  const totalChaptersRead = mangaStats.totalProgress;
+  const totalVolumesRead = mangaEntries.reduce((sum, e) => sum + e.volumesRead, 0);
+  const allScored = [
+    ...animeEntries.filter((e) => e.score !== null),
+    ...mangaEntries.filter((e) => e.score !== null),
+  ];
+  const combinedAvgScore =
+    allScored.length > 0
+      ? allScored.reduce((sum, e) => sum + (e.score ?? 0), 0) / allScored.length
+      : null;
+
   return (
     <Container className="py-8">
+      <ProfileStatsOverview
+        totalEntries={animeEntries.length + mangaEntries.length}
+        totalEpisodesWatched={totalEpisodesWatched}
+        totalChaptersRead={totalChaptersRead}
+        totalVolumesRead={totalVolumesRead}
+        avgScore={combinedAvgScore}
+      />
       <TrackingDashboard
         animeEntries={JSON.parse(JSON.stringify(animeEntries))}
         mangaEntries={JSON.parse(JSON.stringify(mangaEntries))}
