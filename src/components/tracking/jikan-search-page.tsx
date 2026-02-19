@@ -210,7 +210,10 @@ function SearchResults({
 
         return (
           <motion.div key={item.mal_id} variants={fadeIn}>
-            <Card className="flex gap-3 p-3 transition-shadow hover:shadow-md">
+            <Card
+              className={`flex gap-3 p-3 transition-shadow hover:shadow-md${!isInList ? " cursor-pointer" : ""}`}
+              onClick={() => { if (!isInList) onAdd(item); }}
+            >
               <div className="relative h-[120px] w-[85px] flex-shrink-0 overflow-hidden rounded-md bg-muted">
                 {item.images?.jpg?.image_url && (
                   <Image
