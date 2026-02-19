@@ -37,48 +37,55 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Warm rose-tinted background so cards pop against it */
+    --background: 340 30% 98.5%;
+    --foreground: 340 10% 8%;
+    /* Cards stay white to float above the background */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 340 10% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 340 10% 8%;
     --primary: 346 77% 50%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 346 77% 95%;
-    --accent-foreground: 346 77% 30%;
+    /* Warm-tinted secondary surfaces */
+    --secondary: 340 20% 94%;
+    --secondary-foreground: 340 10% 15%;
+    --muted: 340 15% 94%;
+    --muted-foreground: 340 5% 44%;
+    --accent: 346 77% 94%;
+    --accent-foreground: 346 77% 28%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    /* Slightly warmer, more visible borders */
+    --border: 340 20% 86%;
+    --input: 340 20% 86%;
     --ring: 346 77% 50%;
     --radius: 0.625rem;
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 346 77% 55%;
+    /* Deep rose-tinted dark — not flat black */
+    --background: 340 12% 6%;
+    --foreground: 340 10% 96%;
+    /* Cards subtly lighter than background */
+    --card: 340 10% 10%;
+    --card-foreground: 340 10% 96%;
+    --popover: 340 10% 10%;
+    --popover-foreground: 340 10% 96%;
+    --primary: 346 77% 62%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 64%;
-    --accent: 346 77% 15%;
-    --accent-foreground: 346 77% 80%;
+    --secondary: 340 8% 16%;
+    --secondary-foreground: 340 5% 90%;
+    --muted: 340 8% 16%;
+    --muted-foreground: 340 5% 60%;
+    --accent: 346 50% 18%;
+    --accent-foreground: 346 77% 78%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 346 77% 55%;
+    /* More visible rose-tinted borders */
+    --border: 340 12% 20%;
+    --input: 340 12% 20%;
+    --ring: 346 77% 62%;
   }
 }
 
@@ -89,5 +96,41 @@
   body {
     background-color: theme("colors.background");
     color: theme("colors.foreground");
+    /* Subtle radial glow from rose accent in top-right corner */
+    background-image: radial-gradient(
+      ellipse 80% 50% at 100% 0%,
+      hsl(346 77% 50% / 0.06) 0%,
+      transparent 60%
+    );
+    background-attachment: fixed;
+  }
+
+  /* Rose-tinted text selection */
+  ::selection {
+    background-color: hsl(346 77% 50% / 0.2);
+    color: hsl(346 77% 25%);
+  }
+  .dark ::selection {
+    background-color: hsl(346 77% 62% / 0.3);
+    color: hsl(346 77% 90%);
+  }
+
+  /* Styled scrollbar (Webkit) */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(346 30% 75%);
+    border-radius: 999px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: hsl(340 12% 28%);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(346 77% 50%);
   }
 }
