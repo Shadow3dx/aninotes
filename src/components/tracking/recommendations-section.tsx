@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Film, BookOpen, Sparkles } from "lucide-react";
+import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntryDetailDialog } from "./entry-detail-dialog";
 
 interface RecommendationItem {
   title: string;
@@ -9,6 +12,7 @@ interface RecommendationItem {
   mediaType: "anime" | "manga";
   reason: string;
   malId: number;
+  entry: AnimeEntry | MangaEntry | null;
 }
 
 interface RecommendationsSectionProps {
@@ -16,6 +20,8 @@ interface RecommendationsSectionProps {
 }
 
 export function RecommendationsSection({ recommendations }: RecommendationsSectionProps) {
+  const [selected, setSelected] = useState<RecommendationItem | null>(null);
+
   if (recommendations.length === 0) return null;
 
   return (
@@ -29,16 +35,18 @@ export function RecommendationsSection({ recommendations }: RecommendationsSecti
       <CardContent>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {recommendations.map((rec) => (
-            <div
+            <button
               key={`${rec.mediaType}-${rec.malId}`}
-              className="overflow-hidden rounded-lg border border-border/30 bg-card"
+              type="button"
+              className="overflow-hidden rounded-lg border border-border/30 bg-card text-left transition-shadow hover:shadow-md cursor-pointer"
+              onClick={() => rec.entry && setSelected(rec)}
             >
               {rec.imageUrl ? (
                 <div className="aspect-[3/4] overflow-hidden">
                   <img
                     src={rec.imageUrl}
                     alt={rec.title}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                   />
                 </div>
               ) : (
@@ -54,10 +62,19 @@ export function RecommendationsSection({ recommendations }: RecommendationsSecti
                 <p className="line-clamp-2 text-xs font-medium">{rec.title}</p>
                 <p className="mt-1 text-[10px] text-muted-foreground">{rec.reason}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </CardContent>
+
+      <EntryDetailDialog
+        entry={selected?.entry ?? null}
+        type={selected?.mediaType ?? "anime"}
+        open={!!selected}
+        onOpenChange={(open) => {
+          if (!open) setSelected(null);
+        }}
+      />
     </Card>
   );
 }

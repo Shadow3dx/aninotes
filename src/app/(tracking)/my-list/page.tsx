@@ -89,7 +89,7 @@ export default async function MyListPage() {
           createdAt: h.createdAt.toISOString(),
         }))}
       />
-      <RecommendationsSection recommendations={recommendations} />
+      <RecommendationsSection recommendations={JSON.parse(JSON.stringify(recommendations))} />
     </Container>
   );
 }

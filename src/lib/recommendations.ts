@@ -1,3 +1,4 @@
+import type { AnimeEntry, MangaEntry } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 interface Recommendation {
@@ -6,6 +7,7 @@ interface Recommendation {
   mediaType: "anime" | "manga";
   reason: string;
   malId: number;
+  entry: AnimeEntry | MangaEntry | null;
 }
 
 export async function getRecommendations(userId: string): Promise<Recommendation[]> {
@@ -75,7 +77,14 @@ export async function getRecommendations(userId: string): Promise<Recommendation
         }
       }
 
-      const sorted = [...freq.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5);
+      const sorted = [...freq.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 8);
+      // Fetch full representative entries for detail dialog
+      const topMalIds = sorted.map(([malId]) => malId);
+      const fullEntries = await prisma.animeEntry.findMany({
+        where: { malId: { in: topMalIds } },
+        distinct: ["malId"],
+      });
+      const entryMap = new Map(fullEntries.map((e) => [e.malId, e]));
       for (const [malId, data] of sorted) {
         recommendations.push({
           title: data.title,
@@ -83,6 +92,7 @@ export async function getRecommendations(userId: string): Promise<Recommendation
           mediaType: "anime",
           reason: `Liked by ${data.count} users with similar taste`,
           malId,
+          entry: entryMap.get(malId) ?? null,
         });
       }
     }
@@ -123,7 +133,14 @@ export async function getRecommendations(userId: string): Promise<Recommendation
         }
       }
 
-      const sorted = [...freq.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5);
+      const sorted = [...freq.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 8);
+      // Fetch full representative entries for detail dialog
+      const topMalIds = sorted.map(([malId]) => malId);
+      const fullEntries = await prisma.mangaEntry.findMany({
+        where: { malId: { in: topMalIds } },
+        distinct: ["malId"],
+      });
+      const entryMap = new Map(fullEntries.map((e) => [e.malId, e]));
       for (const [malId, data] of sorted) {
         recommendations.push({
           title: data.title,
@@ -131,6 +148,7 @@ export async function getRecommendations(userId: string): Promise<Recommendation
           mediaType: "manga",
           reason: `Liked by ${data.count} users with similar taste`,
           malId,
+          entry: entryMap.get(malId) ?? null,
         });
       }
     }
